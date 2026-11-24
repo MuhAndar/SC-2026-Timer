@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Operator - Denah Meja & Pencatat Waktu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Poppins:wght@400;500;600;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="app-header">
+    <div class="brand-wrapper">
+      <div class="scratch-cat-badge">📍</div>
+      <div class="title-group">
+        <h1>PANEL OPERATOR / JURI</h1>
+        <p>Denah Meja Interaktif & Pencatatan Waktu Peserta</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <a href="index.html" target="_blank" class="nav-btn primary" title="Buka Layar TV Scoreboard di Tab Baru">
+        📺 Buka Layar TV ↗
+      </a>
+      <button class="nav-btn" id="btnToggleSound" title="Aktif/Nonaktif Suara">
+        <span id="soundIcon">🔊</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="operator-main">
+    
+    <!-- CONTROLLER TOOLBAR -->
+    <section class="operator-toolbar">
+      <!-- Mini Timer -->
+      <div class="op-timer-display">
+        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">TIMER LOMBA:</span>
+        <span class="op-timer-digits" id="opTimerDisplay">30:00</span>
+        <span style="font-size: 0.85rem; color: var(--text-secondary);">
+          (Elapsed: <strong id="opElapsedDisplay" style="color: #fff;">00:00</strong>)
+        </span>
+        <button class="nav-btn primary" id="btnOpStart" style="padding: 6px 14px;">▶ Start</button>
+        <button class="nav-btn" id="btnOpPause" style="padding: 6px 14px; display: none;">⏸ Pause</button>
+        <button class="nav-btn" id="btnOpReset" style="padding: 6px 12px; font-size: 0.75rem;">🔄 Reset</button>
+      </div>
+
+      <!-- Quick mode selector -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; background: var(--bg-dark); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <input type="checkbox" id="checkQuickTap" style="accent-color: var(--scratch-orange); width: 16px; height: 16px;">
+          <span>⚡ <strong>Quick-Tap Finish</strong> (1-Klik langsung catat selesai)</span>
+        </label>
+      </div>
+
+      <!-- Legend -->
+      <div class="op-legend">
+        <div class="legend-item">
+          <span class="legend-dot red"></span>
+          <span>Sedang Coding</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot green"></span>
+          <span>Selesai (Finish)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot gray"></span>
+          <span>Meja Kosong</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE FLOORPLAN (PHOTO 2 CONCEPT) -->
+    <section class="floorplan-wrapper" id="floorplanContainer">
+      <img src="assets/floorplan.png" alt="Denah Meja Lomba Speed Coding" class="floorplan-image" id="floorplanImg">
+      <!-- Interactive pins will be injected here dynamically -->
+    </section>
+
+    <!-- HINT BOX -->
+    <div style="text-align: center; font-size: 0.85rem; color: var(--text-secondary); padding: 4px;">
+      💡 <em>Petunjuk: Klik pada titik merah meja untuk memilih nama peserta atau mencatat waktu selesai. Perubahan akan langsung tampil real-time di layar TV tanpa jeda!</em>
+    </div>
+
+  </main>
+
+  <!-- SEAT DETAIL & TIME RECORDING MODAL -->
+  <div class="modal-backdrop" id="seatModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🪑</span> <span id="modalSeatTitle">Pengaturan Meja 01</span>
+        </div>
+        <button class="modal-close-btn" id="btnCloseSeatModal">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Pilih Peserta (Berdasarkan Spreadsheet / Master):</label>
+        <select class="form-select" id="selectParticipant">
+          <option value="">-- Pilih Peserta --</option>
+          <!-- Injected dynamically -->
+        </select>
+      </div>
+
+      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label class="form-label">Kategori</label>
+          <input type="text" class="form-input" id="inputSeatCategory" readonly placeholder="SD / SMP">
+        </div>
+        <div>
+          <label class="form-label">Asal Sekolah</label>
+          <input type="text" class="form-input" id="inputSeatSchool" readonly placeholder="Nama Sekolah">
+        </div>
+      </div>
+
+      <!-- FINISH TIME RECORDING SECTION -->
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">Status Penyelesaian:</span>
+          <span id="seatStatusBadge" class="status-badge-coding">SEDANG CODING</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+          <button type="button" class="btn-finish-big" id="btnRecordFinishNow">
+            🏁 SELESAI SEKARANG! (Waktu: <span id="liveCurrentElapsed">00:00</span>)
+          </button>
+        </div>
+
+        <!-- Custom manual edit time if needed -->
+        <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary);">
+          <span>Koreksi Manual:</span>
+          <input type="text" id="inputCustomTime" class="form-input" style="width: 90px; padding: 4px 8px; font-size: 0.85rem; text-align: center;" placeholder="MM:SS">
+          <button type="button" class="nav-btn" id="btnApplyCustomTime" style="padding: 4px 10px; font-size: 0.75rem;">Terapkan</button>
+          <button type="button" class="nav-btn" id="btnResetFinish" style="padding: 4px 10px; font-size: 0.75rem; color: #f59e0b;">Batal Selesai</button>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button class="nav-btn" id="btnUnassignSeat" style="color: var(--scratch-red); margin-right: auto;">
+          🗑 Kosongkan Meja
+        </button>
+        <button class="nav-btn primary" id="btnSaveSeat">Tutup & Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="store.js"></script>
+  <script src="audio.js"></script>
+  <script src="dialog.js"></script>
+  <script src="operator.js"></script>
+</body>
+</html>

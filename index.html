@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speed Coding Scratch - Live Timer, Denah Meja & Leaderboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Poppins:wght@400;500;600;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="app-header">
+    <div class="brand-wrapper">
+      <div class="scratch-cat-badge" title="Scratch Speed Coding">🐱</div>
+      <div class="title-group">
+        <h1 id="headerEventTitle">SPEED CODING</h1>
+        <p id="headerEventSubtitle">Scratch Championship - Tingkat SD & SMP</p>
+      </div>
+    </div>
+
+    <!-- VIEW MODE SELECTOR -->
+    <div class="view-mode-selector">
+      <button class="view-mode-btn active" id="btnModeDual" title="Denah Meja + Timer + Scoreboard dalam 1 Layar">
+        🔀 Layar Terpadu (Dual View)
+      </button>
+      <button class="view-mode-btn" id="btnModeTV" title="Fokus Layar TV / Proyektor (Foto 1)">
+        📺 Mode TV / Proyektor
+      </button>
+      <button class="view-mode-btn" id="btnModeFloor" title="Fokus Denah Meja Ruangan (Foto 2)">
+        📍 Mode Denah Meja
+      </button>
+    </div>
+
+    <!-- ROUND BADGE & SWITCHER -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div class="round-badge-pill qualification" id="headerRoundBadge">
+        <span>🟡</span> <span id="headerRoundText">BABAK KUALIFIKASI (TOP 10)</span>
+      </div>
+      <button class="btn-cheer" id="btnGlobalCheer" title="Putar Suara Sorakan / Selebrasi Selesai">
+        🎉 Sorakan!
+      </button>
+    </div>
+
+    <div class="header-actions">
+      <button class="nav-btn" id="btnToggleSound" title="Aktif/Nonaktif Suara">
+        <span id="soundIcon">🔊</span> <span id="soundLabel">Suara Aktif</span>
+      </button>
+      <button class="nav-btn" id="btnToggleFullscreen" title="Layar Penuh Proyektor/TV">
+        ⛶ Fullscreen
+      </button>
+      <button class="nav-btn" id="btnOpenSettings" title="Pengaturan Lomba & Spreadsheet">
+        ⚙ Pengaturan
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 1. VIEW MODE: DUAL VIEW (TERPADU / SPLIT)  -->
+  <!-- ========================================== -->
+  <main class="dual-view-container" id="viewDual">
+    
+    <!-- LEFT COLUMN: DENAH MEJA INTERAKTIF (PHOTO 2) -->
+    <div class="dual-left-col">
+      <div class="operator-toolbar" style="margin-bottom: 0;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.1rem;">🪑</span>
+          <strong style="color: #fff; font-size: 0.95rem;">DENAH MEJA PESERTA</strong>
+          <span style="font-size: 0.75rem; color: var(--text-secondary);">(Klik titik untuk catat selesai)</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; background: var(--bg-dark); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <input type="checkbox" id="checkQuickTapDual" style="accent-color: var(--scratch-orange); width: 14px; height: 14px;">
+            <span>⚡ <strong>Quick-Tap Finish</strong></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE FLOORPLAN -->
+      <div class="floorplan-wrapper" id="floorplanContainerDual">
+        <img src="assets/floorplan.png" alt="Denah Meja Lomba Speed Coding" class="floorplan-image">
+        <!-- Interactive pins injected here -->
+      </div>
+
+      <!-- LEGEND -->
+      <div class="op-legend" style="justify-content: center; background: var(--bg-card); padding: 8px 14px; border-radius: 12px; border: 1px solid var(--border-color);">
+        <div class="legend-item"><span class="legend-dot red"></span><span>Sedang Coding</span></div>
+        <div class="legend-item"><span class="legend-dot green"></span><span>Selesai (Finish)</span></div>
+        <div class="legend-item"><span class="legend-dot gray"></span><span>Meja Kosong</span></div>
+      </div>
+
+      <!-- DUAL VIEW SPONSOR & OFFICE LOGO STRIP -->
+      <div class="dual-sponsor-strip">
+        <div class="dual-sponsor-label">SUPPORTED & HOSTED BY:</div>
+        <div class="dual-sponsor-logos">
+          <!-- Scratch Brand -->
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg viewBox="0 0 100 35" fill="none" style="height: 20px; width: auto;">
+              <path d="M12 28C6 28 2 24 2 18C2 12 6 8 12 8C17 8 20 11 21 14L16 16C15.5 14 14 13 12 13C9 13 7 15 7 18C7 21 9 23 12 23C14 23 15.5 22 16 20L21 22C20 25 17 28 12 28Z" fill="#FFAB19"/>
+              <path d="M26 8H31V28H26V8Z" fill="#4C97FF"/>
+              <path d="M37 14C37 10 40 8 44 8C48 8 51 10 51 14V28H46V15C46 13.5 45 13 44 13C43 13 42 13.5 42 15V28H37V14Z" fill="#0FBD8C"/>
+              <path d="M57 18C57 12 61 8 67 8C73 8 77 12 77 18C77 24 73 28 67 28C61 28 57 24 57 18ZM72 18C72 14.5 70 13 67 13C64 13 62 14.5 62 18C62 21.5 64 23 67 23C70 23 72 21.5 72 18Z" fill="#9966FF"/>
+              <path d="M82 8H87V13H93V18H87V28H82V8Z" fill="#FF4C4C"/>
+            </svg>
+            <span style="font-size: 0.72rem; font-weight: 800; color: var(--scratch-orange);">SCRATCH</span>
+          </div>
+
+          <!-- Office / Organizer Host Badge -->
+          <div class="office-host-badge" id="officeLogoBadge">
+            <span style="font-size: 0.85rem;">🏢</span>
+            <span id="officeNameLabel">Panitia Penyelenggara</span>
+          </div>
+
+          <!-- Dynamic Custom Sponsor Logo -->
+          <img id="customSponsorImgDual" class="sponsor-mini-logo" style="display: none;" alt="Logo Sponsor">
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: SISA WAKTU & SCOREBOARD LIVE -->
+    <div class="dual-right-col">
+      
+      <!-- HERO SISA WAKTU BOX -->
+      <section class="timer-hero-box" style="padding: 18px 24px;">
+        <div class="timer-left">
+          <div class="timer-tag">
+            <span class="pulse-dot" id="timerPulseDotDual"></span>
+            <span id="timerStatusLabelDual">SISA WAKTU</span>
+          </div>
+          <div class="timer-digits" id="timerDisplayDual">60:00</div>
+          <div class="timer-subinfo">
+            <span>Durasi: <strong id="timerDurationTextDual">30 Menit</strong></span>
+            <span>•</span>
+            <span>Elapsed: <strong id="elapsedDisplayDual">00:00</strong></span>
+          </div>
+        </div>
+
+        <div class="timer-controls-quick">
+          <button class="btn-ctrl" id="btnStartDual">▶ MULAI</button>
+          <button class="btn-ctrl pause" id="btnPauseDual" style="display: none;">⏸ JEDA</button>
+          <button class="nav-btn" id="btnResetDual" style="font-size: 0.75rem;">🔄 Reset</button>
+        </div>
+
+        <div class="timer-progress-track">
+          <div class="timer-progress-fill" id="timerProgressBarDual"></div>
+        </div>
+      </section>
+
+      <!-- LIVE SCOREBOARD -->
+      <section class="scoreboard-section" style="flex: 1;">
+        <div class="scoreboard-header" style="margin-bottom: 10px; padding-bottom: 8px;">
+          <div class="scoreboard-title-wrap">
+            <h2 style="font-size: 1.15rem;">🏆 URUTAN PENYELESAIAN LOMBA</h2>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;">
+            <span id="scoreboardCountBadge">30 Peserta</span>
+          </div>
+        </div>
+
+        <div class="leaderboard-grid compact-grid" id="leaderboardContainerDual">
+          <!-- Injected dynamically as 2-column layout -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 2. VIEW MODE: TV PROYEKTOR (FOTO 1 MURNI) -->
+  <!-- ========================================== -->
+  <main class="tv-container" id="viewTV" style="display: none;">
+    <!-- LEFT SIDEBAR: LOGO & SPONSOR -->
+    <aside class="sidebar-logo-card">
+      <div style="width: 100%; text-align: center;">
+        <div class="logo-section-title">OFFICIAL SPONSORS & PARTNERS</div>
+        <div class="logo-display-area">
+          <div class="scratch-official-brand">
+            <svg viewBox="0 0 100 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 28C6 28 2 24 2 18C2 12 6 8 12 8C17 8 20 11 21 14L16 16C15.5 14 14 13 12 13C9 13 7 15 7 18C7 21 9 23 12 23C14 23 15.5 22 16 20L21 22C20 25 17 28 12 28Z" fill="#FFAB19"/>
+              <path d="M26 8H31V28H26V8Z" fill="#4C97FF"/>
+              <path d="M37 14C37 10 40 8 44 8C48 8 51 10 51 14V28H46V15C46 13.5 45 13 44 13C43 13 42 13.5 42 15V28H37V14Z" fill="#0FBD8C"/>
+              <path d="M57 18C57 12 61 8 67 8C73 8 77 12 77 18C77 24 73 28 67 28C61 28 57 24 57 18ZM72 18C72 14.5 70 13 67 13C64 13 62 14.5 62 18C62 21.5 64 23 67 23C70 23 72 21.5 72 18Z" fill="#9966FF"/>
+              <path d="M82 8H87V13H93V18H87V28H82V8Z" fill="#FF4C4C"/>
+            </svg>
+            <span>SCRATCH EDITION</span>
+          </div>
+
+          <img id="customLogoImgTV" class="sponsor-logo" style="display: none;" alt="Logo Sponsor">
+          
+          <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; padding: 0 10px; margin-top: 10px;">
+            Ajang ketangkasan logika, algoritma & kecepatan memprogram animasi/game interaktif
+          </div>
+        </div>
+      </div>
+
+      <div class="event-stats-pill-group">
+        <div class="stat-pill">
+          <span class="label">Total Meja/Peserta</span>
+          <span class="value" id="statTotalSeatsTV">30</span>
+        </div>
+        <div class="stat-pill">
+          <span class="label">Sudah Selesai (Finish)</span>
+          <span class="value" style="color: var(--scratch-green);" id="statFinishedCountTV">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="label">Masih Coding</span>
+          <span class="value" style="color: var(--scratch-orange);" id="statActiveCountTV">0</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT TOP: HERO SISA WAKTU BOX -->
+    <section class="timer-hero-box">
+      <div class="timer-left">
+        <div class="timer-tag">
+          <span class="pulse-dot" id="timerPulseDotTV"></span>
+          <span id="timerStatusLabelTV">SISA WAKTU</span>
+        </div>
+        <div class="timer-digits" id="timerDisplayTV">30:00</div>
+        <div class="timer-subinfo">
+          <span>Durasi: <strong id="timerDurationTextTV">30 Menit</strong></span>
+          <span>•</span>
+          <span>Waktu Berjalan: <strong id="elapsedDisplayTV">00:00</strong></span>
+        </div>
+      </div>
+
+      <div class="timer-controls-quick">
+        <button class="btn-ctrl" id="btnStartTV">▶ MULAI</button>
+        <button class="btn-ctrl pause" id="btnPauseTV" style="display: none;">⏸ JEDA</button>
+        <button class="nav-btn" id="btnResetTV" style="font-size: 0.75rem;">🔄 Reset Timer</button>
+      </div>
+
+      <div class="timer-progress-track">
+        <div class="timer-progress-fill" id="timerProgressBarTV"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT BOTTOM: SCOREBOARD -->
+    <section class="scoreboard-section">
+      <div class="scoreboard-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+        <div class="scoreboard-title-wrap">
+          <h2 style="font-size: 1.25rem;">🏆 URUTAN PENYELESAIAN LOMBA</h2>
+        </div>
+        <div style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 600;">
+          Urutan Berdasarkan Waktu Selesai Tercepat
+        </div>
+      </div>
+
+      <div class="leaderboard-grid compact-grid" id="leaderboardContainerTV">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 3. VIEW MODE: FULL FLOORPLAN (DENAH MURNI) -->
+  <!-- ========================================== -->
+  <main class="operator-main" id="viewFloor" style="display: none;">
+    <section class="operator-toolbar">
+      <div class="op-timer-display">
+        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">TIMER LOMBA:</span>
+        <span class="op-timer-digits" id="opTimerDisplaySolo">30:00</span>
+        <span style="font-size: 0.85rem; color: var(--text-secondary);">(Elapsed: <strong id="opElapsedDisplaySolo" style="color: #fff;">00:00</strong>)</span>
+        <button class="nav-btn primary" id="btnStartFloor" style="padding: 6px 14px;">▶ Start</button>
+        <button class="nav-btn" id="btnPauseFloor" style="padding: 6px 14px; display: none;">⏸ Pause</button>
+        <button class="nav-btn" id="btnResetFloor" style="padding: 6px 12px; font-size: 0.75rem;">🔄 Reset</button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; background: var(--bg-dark); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <input type="checkbox" id="checkQuickTapSolo" style="accent-color: var(--scratch-orange); width: 16px; height: 16px;">
+          <span>⚡ <strong>Quick-Tap Finish</strong> (1-Klik langsung catat selesai)</span>
+        </label>
+      </div>
+
+      <div class="op-legend">
+        <div class="legend-item"><span class="legend-dot red"></span><span>Sedang Coding</span></div>
+        <div class="legend-item"><span class="legend-dot green"></span><span>Selesai (Finish)</span></div>
+        <div class="legend-item"><span class="legend-dot gray"></span><span>Meja Kosong</span></div>
+      </div>
+    </section>
+
+    <section class="floorplan-wrapper" id="floorplanContainerSolo">
+      <img src="assets/floorplan.png" alt="Denah Meja Lomba Speed Coding" class="floorplan-image">
+    </section>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- SEAT DETAIL & TIME RECORDING MODAL         -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" id="seatModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🪑</span> <span id="modalSeatTitle">Pengaturan Meja 01</span>
+        </div>
+        <button class="modal-close-btn" id="btnCloseSeatModal">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Pilih Peserta (Berdasarkan Spreadsheet / Master):</label>
+        <select class="form-select" id="selectParticipant">
+          <option value="">-- Pilih Peserta --</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label class="form-label">Kategori</label>
+          <input type="text" class="form-input" id="inputSeatCategory" readonly placeholder="SD / SMP">
+        </div>
+        <div>
+          <label class="form-label">Asal Sekolah</label>
+          <input type="text" class="form-input" id="inputSeatSchool" readonly placeholder="Nama Sekolah">
+        </div>
+      </div>
+
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">Status Penyelesaian:</span>
+          <span id="seatStatusBadge" class="status-badge-coding">SEDANG CODING</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+          <button type="button" class="btn-finish-big" id="btnRecordFinishNow">
+            🏁 SELESAI SEKARANG! (Waktu: <span id="liveCurrentElapsed">00:00</span>)
+          </button>
+        </div>
+
+        <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary);">
+          <span>Koreksi Manual:</span>
+          <input type="text" id="inputCustomTime" class="form-input" style="width: 90px; padding: 4px 8px; font-size: 0.85rem; text-align: center;" placeholder="MM:SS">
+          <button type="button" class="nav-btn" id="btnApplyCustomTime" style="padding: 4px 10px; font-size: 0.75rem;">Terapkan</button>
+          <button type="button" class="nav-btn" id="btnResetFinish" style="padding: 4px 10px; font-size: 0.75rem; color: #f59e0b;">Batal Selesai</button>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button class="nav-btn" id="btnUnassignSeat" style="color: var(--scratch-red); margin-right: auto;">
+          🗑 Kosongkan Meja
+        </button>
+        <button class="nav-btn primary" id="btnSaveSeat">Tutup & Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SETTINGS MODAL                             -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">⚙ Pengaturan Lomba & Data</div>
+        <button class="modal-close-btn" id="btnCloseSettings">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Judul Acara / Perlombaan</label>
+        <input type="text" class="form-input" id="inputEventTitle" placeholder="Contoh: SPEED CODING SCRATCH 2026">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Subjudul Acara</label>
+        <input type="text" class="form-input" id="inputEventSubtitle" placeholder="Contoh: Tingkat SD & SMP Se-Kota">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Babak Perlombaan yang Berlangsung</label>
+        <select class="form-select" id="selectRoundSetting">
+          <option value="QUALIFICATION">🟡 Babak Kualifikasi (30 Peserta -> Lolos 10 Besar)</option>
+          <option value="FINAL">🏆 Babak Grand Final (10 Peserta -> Juara 1, 2, 3)</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="background: rgba(255, 171, 25, 0.08); border: 1px dashed var(--scratch-orange); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--scratch-orange); margin-bottom: 4px;">
+          ⚡ Otomatisasi Transisi Babak:
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 8px;">
+          Setelah babak kualifikasi selesai, Anda dapat langsung mengunci 10 peserta terbaik dan memindahkannya ke Meja 01–10 untuk Babak Final.
+        </div>
+        <button type="button" class="nav-btn orange" id="btnAdvanceTop10" style="width: 100%; justify-content: center; font-size: 0.82rem;">
+          🚀 Kunci & Loloskan Top 10 ke Babak Final
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nama Kantor / Penyelenggara Lomba</label>
+        <input type="text" class="form-input" id="inputOfficeName" placeholder="Contoh: PT Kode Kreatif Indonesia / Dinas Pendidikan">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Durasi Timer (Menit)</label>
+        <input type="number" class="form-input" id="inputDurationMinutes" min="1" max="180" value="60">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">URL Logo Kantor / Sponsor Tambahan (Opsional)</label>
+        <input type="url" class="form-input" id="inputLogoUrl" placeholder="https://domain.com/logo.png">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Integrasi Google Spreadsheet (Link CSV Publik)</label>
+        <input type="url" class="form-input" id="inputGoogleSheetUrl" placeholder="Link publish CSV spreadsheet">
+        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+          Format kolom: Nama, Kategori (SD/SMP), Sekolah
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <button class="nav-btn primary" id="btnSyncGoogleSheets" style="flex: 1; justify-content: center;">
+          📥 Tarik Data Spreadsheet
+        </button>
+        <button class="nav-btn" id="btnExportCSV" style="flex: 1; justify-content: center;">
+          📤 Ekspor Hasil (CSV)
+        </button>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button class="nav-btn" id="btnResetAllScores" style="color: var(--scratch-red); margin-right: auto;">
+          ⚠️ Reset Semua Waktu Lomba
+        </button>
+        <button class="nav-btn primary" id="btnSaveSettings">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="store.js"></script>
+  <script src="audio.js"></script>
+  <script src="dialog.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
