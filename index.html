@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Poppins:wght@400;500;600;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.2">
 </head>
 <body>
 
@@ -50,6 +50,9 @@
     </div>
 
     <div class="header-actions">
+      <a href="rank.html" class="nav-btn" target="_blank" title="Buka Halaman Rekapitulasi & Leaderboard Nilai">
+        🏆 Rekap / Rank
+      </a>
       <button class="nav-btn" id="btnToggleSound" title="Aktif/Nonaktif Suara">
         <span id="soundIcon">🔊</span> <span id="soundLabel">Suara Aktif</span>
       </button>
@@ -89,7 +92,7 @@
           <span class="operator-badge-circle"></span>
           <span class="operator-badge-text">Operator</span>
         </div>
-        <img src="assets/floorplan.png" alt="Denah Meja Lomba Speed Coding" class="floorplan-image">
+        <img src="assets/floorplan.png?v=2.2" alt="Denah Meja Lomba Speed Coding" class="floorplan-image">
         <!-- Interactive pins injected here -->
       </div>
 
@@ -278,7 +281,7 @@
         <span class="operator-badge-circle"></span>
         <span class="operator-badge-text">Operator</span>
       </div>
-      <img src="assets/floorplan.png" alt="Denah Meja Lomba Speed Coding" class="floorplan-image">
+      <img src="assets/floorplan.png?v=2.2" alt="Denah Meja Lomba Speed Coding" class="floorplan-image">
     </section>
   </main>
 
@@ -369,21 +372,6 @@
         </select>
       </div>
 
-      <div class="form-group" style="background: rgba(255, 171, 25, 0.08); border: 1px dashed var(--scratch-orange); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
-        <div style="font-size: 0.85rem; font-weight: 700; color: var(--scratch-orange); margin-bottom: 4px;">
-          ⚡ Otomatisasi Transisi Babak:
-        </div>
-        <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 8px;">
-          Peserta Babak Final mengacu langsung pada Sheet "Rekapitulasi Final". Jika dewan juri telah mengisi finalis pada spreadsheet, klik tombol di bawah untuk langsung memuat finalis ke dalam sistem.
-        </div>
-        <button type="button" class="nav-btn orange" id="btnSyncFinalistsFromSheet" style="width: 100%; justify-content: center; font-size: 0.82rem; margin-bottom: 6px;">
-          🔄 Tarik Finalis dari Sheet "Rekapitulasi Final"
-        </button>
-        <button type="button" class="nav-btn" id="btnAdvanceTop10" style="width: 100%; justify-content: center; font-size: 0.78rem; color: var(--text-secondary);">
-          ⚡ Atau Otomatis Kunci Top 10 Kualifikasi ke Final
-        </button>
-      </div>
-
       <div class="form-group">
         <label class="form-label">Nama Kantor / Penyelenggara Lomba</label>
         <input type="text" class="form-input" id="inputOfficeName" placeholder="Contoh: PT Kode Kreatif Indonesia / Dinas Pendidikan">
@@ -441,9 +429,9 @@
   </div>
 
   <!-- SCRIPTS -->
-  <script src="store.js"></script>
-  <script src="audio.js"></script>
-  <script src="dialog.js"></script>
-  <script src="app.js"></script>
+  <script src="store.js?v=2.2"></script>
+  <script src="audio.js?v=2.2"></script>
+  <script src="dialog.js?v=2.2"></script>
+  <script src="app.js?v=2.2"></script>
 </body>
 </html>

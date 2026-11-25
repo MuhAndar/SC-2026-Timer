@@ -130,11 +130,11 @@ class SpeedCodingStore {
             parsed.timer.status = 'finished';
           }
         }
-        if (!parsed.seats || parsed.seats.length === 0 || parsed.layoutVersion !== '2.0' || parsed.seats.length !== DEFAULT_SEATS.length) {
-          parsed.layoutVersion = '2.0';
+        if (!parsed.seats || parsed.seats.length === 0 || parsed.layoutVersion !== '2.2') {
+          parsed.layoutVersion = '2.2';
           const oldSeats = parsed.seats || [];
           parsed.seats = DEFAULT_SEATS.map((defSeat, idx) => {
-            const existing = oldSeats[idx] || {};
+            const existing = oldSeats.find(s => s.id === defSeat.id) || oldSeats[idx] || {};
             return {
               ...defSeat,
               participantId: existing.participantId || INITIAL_PARTICIPANTS[idx]?.id || null,
@@ -147,32 +147,42 @@ class SpeedCodingStore {
               finishTimestamp: existing.finishTimestamp || null
             };
           });
-        } else {
-          // Auto-migrate stale placeholder schools to official PESERTA sheet data
-          const pMapById = new Map(INITIAL_PARTICIPANTS.map(p => [p.id, p]));
-          const pMapByName = new Map(INITIAL_PARTICIPANTS.map(p => [p.name.toLowerCase().trim(), p]));
+        }
 
-          parsed.seats.forEach((seat, idx) => {
-            const matched = (seat.participantId && pMapById.get(seat.participantId)) ||
-                            (seat.participantName && pMapByName.get(seat.participantName.toLowerCase().trim())) ||
-                            (INITIAL_PARTICIPANTS[idx]);
-
-            // If seat had placeholder school or missing school, update from official data
-            if (matched && (!seat.school || seat.school.startsWith('Peserta ') || seat.school === 'Peserta Kualifikasi')) {
-              seat.participantId = matched.id;
-              seat.participantName = matched.name;
-              seat.category = matched.category;
-              seat.school = matched.school;
-              if (seat.status === 'empty' && matched.name) {
-                seat.status = 'coding';
-              }
-            }
-          });
-
-          // Update pool if it was placeholder
-          if (!parsed.participantsPool || parsed.participantsPool.length === 0 || parsed.participantsPool[0]?.school?.startsWith('Peserta ')) {
-            parsed.participantsPool = [...INITIAL_PARTICIPANTS];
+        // Always strictly align seat coordinates to current layout definition
+        const defMap = new Map(DEFAULT_SEATS.map(s => [s.id, s]));
+        parsed.seats.forEach(seat => {
+          const def = defMap.get(seat.id);
+          if (def) {
+            seat.x = def.x;
+            seat.y = def.y;
           }
+        });
+
+        // Auto-migrate stale placeholder schools to official PESERTA sheet data
+        const pMapById = new Map(INITIAL_PARTICIPANTS.map(p => [p.id, p]));
+        const pMapByName = new Map(INITIAL_PARTICIPANTS.map(p => [p.name.toLowerCase().trim(), p]));
+
+        parsed.seats.forEach((seat, idx) => {
+          const matched = (seat.participantId && pMapById.get(seat.participantId)) ||
+                          (seat.participantName && pMapByName.get(seat.participantName.toLowerCase().trim())) ||
+                          (INITIAL_PARTICIPANTS[idx]);
+
+          // If seat had placeholder school or missing school, update from official data
+          if (matched && (!seat.school || seat.school.startsWith('Peserta ') || seat.school === 'Peserta Kualifikasi')) {
+            seat.participantId = matched.id;
+            seat.participantName = matched.name;
+            seat.category = matched.category;
+            seat.school = matched.school;
+            if (seat.status === 'empty' && matched.name) {
+              seat.status = 'coding';
+            }
+          }
+        });
+
+        // Update pool if it was placeholder
+        if (!parsed.participantsPool || parsed.participantsPool.length === 0 || parsed.participantsPool[0]?.school?.startsWith('Peserta ')) {
+          parsed.participantsPool = [...INITIAL_PARTICIPANTS];
         }
 
         // Ensure googleSheetUrl targets the PESERTA sheet
@@ -526,12 +536,43 @@ class SpeedCodingStore {
     this.saveState(this.state, true);
   }
 
+  // Restore Qualification participants
+  restoreQualification() {
+    const pool = (this.state.participantsPool && this.state.participantsPool.length > 0)
+      ? this.state.participantsPool
+      : INITIAL_PARTICIPANTS;
+
+    this.state.seats.forEach((seat, idx) => {
+      if (idx < pool.length) {
+        const p = pool[idx];
+        seat.participantId = p.id || `P${String(idx + 1).padStart(2, '0')}`;
+        seat.participantName = p.name;
+        seat.category = p.category || 'SD';
+        seat.school = p.school || '';
+        seat.status = 'coding';
+        seat.finishSeconds = null;
+        seat.finishTimeElapsed = null;
+        seat.finishTimestamp = null;
+      } else {
+        seat.participantId = null;
+        seat.participantName = '';
+        seat.category = '';
+        seat.school = '';
+        seat.status = 'empty';
+        seat.finishSeconds = null;
+        seat.finishTimeElapsed = null;
+        seat.finishTimestamp = null;
+      }
+    });
+    this.saveState(this.state, true);
+  }
+
   // Switch competition round
   setRound(round) {
     this.state.currentRound = round; // 'QUALIFICATION' or 'FINAL'
-    if (round === 'QUALIFICATION' && this.state.participantsPool && this.state.participantsPool.length > 0) {
-      this.populateParticipants(this.state.participantsPool);
-    } else if (round === 'FINAL' && this.state.finalistsPool) {
+    if (round === 'QUALIFICATION') {
+      this.restoreQualification();
+    } else if (round === 'FINAL' && this.state.finalistsPool && this.state.finalistsPool.length > 0) {
       this.loadFinalists(this.state.finalistsPool);
     }
     this.saveState(this.state, true);

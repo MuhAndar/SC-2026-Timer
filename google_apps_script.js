@@ -18,7 +18,70 @@ function doGet(e) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheets = ss.getSheets();
     var reqSheet = (e && e.parameter && e.parameter.sheet) ? String(e.parameter.sheet).trim().toLowerCase() : '';
+    var reqType = (e && e.parameter && e.parameter.type) ? String(e.parameter.type).trim().toLowerCase() : '';
     
+    // =========================================================================
+    // 1. REKAPITULASI PENYISIHAN & FINAL (UNTUK HALAMAN /rank)
+    // =========================================================================
+    if (reqSheet === 'rekap_penyisihan' || reqSheet === 'rekap_final' || reqType === 'rekap') {
+      var isFinalRekap = (reqSheet === 'rekap_final' || (e && e.parameter && String(e.parameter.round).toLowerCase() === 'final'));
+      var targetRekapSheet = null;
+
+      for (var s = 0; s < sheets.length; s++) {
+        var sName = sheets[s].getName().toUpperCase();
+        if (isFinalRekap) {
+          if (sName.indexOf("REKAPITULASI FINAL") !== -1 || sName.indexOf("REKAP FINAL") !== -1 || sName === "REKAPITULASI_FINAL") {
+            targetRekapSheet = sheets[s];
+            break;
+          }
+        } else {
+          if (sName.indexOf("REKAPITULASI PENYISIHAN") !== -1 || sName.indexOf("REKAP PENYISIHAN") !== -1 || 
+              sName.indexOf("REKAPITULASI KUALIFIKASI") !== -1 || sName.indexOf("REKAP KUALIFIKASI") !== -1 || sName === "REKAPITULASI_PENYISIHAN") {
+            targetRekapSheet = sheets[s];
+            break;
+          }
+        }
+      }
+
+      // Fallback pencarian fleksibel jika nama persis belum ditemukan
+      if (!targetRekapSheet) {
+        for (var s = 0; s < sheets.length; s++) {
+          var sName = sheets[s].getName().toUpperCase();
+          if (isFinalRekap && sName.indexOf("FINAL") !== -1 && sName.indexOf("JURI") === -1) {
+            targetRekapSheet = sheets[s];
+            break;
+          } else if (!isFinalRekap && (sName.indexOf("PENYISIHAN") !== -1 || sName.indexOf("KUALIFIKASI") !== -1) && sName.indexOf("JURI") === -1) {
+            targetRekapSheet = sheets[s];
+            break;
+          }
+        }
+      }
+
+      if (!targetRekapSheet) {
+        return ContentService.createTextOutput(JSON.stringify({
+          status: "success",
+          type: "rekap",
+          count: 0,
+          sheet: isFinalRekap ? "REKAPITULASI FINAL (Belum Ditemukan)" : "REKAPITULASI PENYISIHAN (Belum Ditemukan)",
+          rows: [],
+          message: "Sheet rekapitulasi belum ditemukan di spreadsheet."
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+
+      var rekapResult = parseRekapSheet(targetRekapSheet);
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        type: "rekap",
+        round: isFinalRekap ? "final" : "penyisihan",
+        sheet: rekapResult.sheet,
+        count: rekapResult.count,
+        rows: rekapResult.rows
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // =========================================================================
+    // 2. DATA FINALIS UNTUK DENAH MEJA (/ & operator.html)
+    // =========================================================================
     var targetSheet = null;
 
     if (reqSheet === 'final' || reqSheet.indexOf('final') !== -1) {
@@ -116,6 +179,126 @@ function doGet(e) {
       message: err.toString()
     })).setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+/**
+ * Helper untuk parsing sheet Rekapitulasi Nilai (Juri & Kriteria Penilaian)
+ */
+function parseRekapSheet(sheet) {
+  var data = sheet.getDataRange().getValues();
+  if (!data || data.length === 0) return { sheet: sheet.getName(), count: 0, rows: [] };
+
+  var headerRow = -1;
+  var col = {};
+
+  for (var r = 0; r < Math.min(20, data.length); r++) {
+    for (var c = 0; c < data[r].length; c++) {
+      var val = String(data[r][c]).toLowerCase().trim();
+      if ((val.indexOf("nama") !== -1 || val === "peserta") && col.name === undefined) {
+        col.name = c;
+        headerRow = r;
+      }
+      if ((val.indexOf("sekolah") !== -1 || val.indexOf("instansi") !== -1) && col.school === undefined) col.school = c;
+      if ((val.indexOf("kategori") !== -1 || val.indexOf("jenjang") !== -1) && col.category === undefined) col.category = c;
+      if ((val.indexOf("peringkat") !== -1 || val.indexOf("rank") !== -1 || val === "no" || val === "juara") && col.rank === undefined) col.rank = c;
+
+      // Juri
+      if ((val.indexOf("juri 1") !== -1 || val === "j1" || val.indexOf("juri1") !== -1) && col.juri1 === undefined) col.juri1 = c;
+      if ((val.indexOf("juri 2") !== -1 || val === "j2" || val.indexOf("juri2") !== -1) && col.juri2 === undefined) col.juri2 = c;
+      if ((val.indexOf("juri 3") !== -1 || val === "j3" || val.indexOf("juri3") !== -1) && col.juri3 === undefined) col.juri3 = c;
+
+      // Kriteria
+      if ((val.indexOf("fungsi") !== -1) && col.fungsionalitas === undefined) col.fungsionalitas = c;
+      if ((val.indexOf("efisien") !== -1 || val.indexOf("algoritma") !== -1) && col.efisiensi === undefined) col.efisiensi = c;
+      if ((val.indexOf("kecepatan") !== -1 || val.indexOf("waktu") !== -1 || val.indexOf("speed") !== -1) && col.kecepatan === undefined) col.kecepatan = c;
+
+      // Total
+      if ((val.indexOf("total") !== -1 || val.indexOf("skor") !== -1 || val.indexOf("nilai akhir") !== -1 || val === "jumlah") && col.total === undefined) col.total = c;
+    }
+    if (headerRow !== -1 && col.name !== undefined) break;
+  }
+
+  if (headerRow === -1) headerRow = 0;
+
+  var rows = [];
+  for (var i = headerRow + 1; i < data.length; i++) {
+    var rawName = col.name !== undefined ? String(data[i][col.name]).trim() : "";
+    if (!rawName || rawName.toLowerCase() === "nama peserta" || rawName.toLowerCase() === "nama" || rawName.replace(/[^a-zA-Z]/g, '').length < 3) {
+      continue;
+    }
+
+    var school = col.school !== undefined ? String(data[i][col.school]).trim() : "";
+    var cat = col.category !== undefined ? String(data[i][col.category]).trim() : "";
+    if (!cat && school) {
+      cat = school.toUpperCase().indexOf("SMP") !== -1 ? "SMP" : "SD";
+    }
+
+    var rankVal = col.rank !== undefined && data[i][col.rank] !== "" ? data[i][col.rank] : (rows.length + 1);
+    var j1 = col.juri1 !== undefined ? data[i][col.juri1] : null;
+    var j2 = col.juri2 !== undefined ? data[i][col.juri2] : null;
+    var j3 = col.juri3 !== undefined ? data[i][col.juri3] : null;
+
+    var fung = col.fungsionalitas !== undefined ? data[i][col.fungsionalitas] : null;
+    var efi = col.efisiensi !== undefined ? data[i][col.efisiensi] : null;
+    var kec = col.kecepatan !== undefined ? data[i][col.kecepatan] : null;
+
+    var totalVal = col.total !== undefined ? data[i][col.total] : null;
+    if (totalVal === null || totalVal === "" || isNaN(totalVal)) {
+      if (j1 !== null || j2 !== null || j3 !== null) {
+        var s = (Number(j1) || 0) + (Number(j2) || 0) + (Number(j3) || 0);
+        totalVal = s > 0 ? (s / 3) : null;
+      } else if (fung !== null || efi !== null || kec !== null) {
+        var s = (Number(fung) || 0) + (Number(efi) || 0) + (Number(kec) || 0);
+        totalVal = s > 0 ? (s / 3) : null;
+      }
+    } else {
+      // Jika kolom total di spreadsheet berisi hasil penjumlahan nilai 3 juri (> 100), bagi 3 agar skala 0-100
+      var nTot = Number(totalVal);
+      if (!isNaN(nTot) && nTot > 100) {
+        totalVal = nTot / 3;
+      }
+    }
+
+    function formatScore(val) {
+      if (val === null || val === "" || val === undefined) return "-";
+      var num = Number(val);
+      if (!isNaN(num)) return Math.round(num * 10) / 10;
+      return String(val);
+    }
+
+    rows.push({
+      rank: rankVal,
+      name: rawName,
+      category: cat || "SD",
+      school: school,
+      juri1: formatScore(j1),
+      juri2: formatScore(j2),
+      juri3: formatScore(j3),
+      fungsionalitas: formatScore(fung),
+      efisiensi: formatScore(efi),
+      kecepatan: formatScore(kec),
+      total: formatScore(totalVal)
+    });
+  }
+
+  // Sort descending by total jika ada total numerik
+  var hasNumeric = rows.some(function(r) { return typeof r.total === 'number'; });
+  if (hasNumeric) {
+    rows.sort(function(a, b) {
+      var numA = typeof a.total === 'number' ? a.total : -1;
+      var numB = typeof b.total === 'number' ? b.total : -1;
+      return numB - numA;
+    });
+    rows.forEach(function(r, idx) {
+      r.rank = idx + 1;
+    });
+  }
+
+  return {
+    sheet: sheet.getName(),
+    count: rows.length,
+    rows: rows
+  };
 }
 
 function doPost(e) {
