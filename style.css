@@ -738,6 +738,48 @@ body {
   color: var(--scratch-green);
 }
 
+.compact-seat-badge {
+  font-family: 'Fredoka', 'Poppins', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(255, 171, 25, 0.16);
+  color: #ffb833;
+  border: 1px solid rgba(255, 171, 25, 0.35);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+
+.category-pill {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 5px;
+  vertical-align: middle;
+  display: inline-block;
+  line-height: 1.2;
+}
+
+.category-pill.sd {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.category-pill.smp {
+  background: rgba(168, 85, 247, 0.22);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+}
+
+.participant-name-text {
+  font-weight: 700;
+  color: #ffffff;
+}
+
 .compact-participant-name {
   font-size: 0.82rem;
   font-weight: 700;
@@ -1068,6 +1110,17 @@ body {
   box-shadow: 0 0 20px #ffab19, 0 0 35px #00b5e2 !important;
   border: 2px dashed #ffe600 !important;
   z-index: 60 !important;
+}
+
+@keyframes pinSwappedPop {
+  0% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+  40% { transform: translate(-50%, -50%) scale(1.55); filter: brightness(1.8); box-shadow: 0 0 24px #ffab19, 0 0 36px #00b5e2; }
+  100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+}
+
+.seat-pin.seat-pin-swapped {
+  animation: pinSwappedPop 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 55 !important;
 }
 
 .seat-pin:hover {

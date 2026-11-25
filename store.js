@@ -40,37 +40,37 @@ const DEFAULT_SEATS = [
   { id: "S30", label: "Meja 30", x: 91.93, y: 85.97 }
 ];
 
-// Official 29 Participants extracted directly from Google Spreadsheet
+// Official 29 Participants extracted directly from Google Spreadsheet PESERTA sheet
 const INITIAL_PARTICIPANTS = [
-  { id: 'P01', no: '1', name: 'Raziq Khairi Rafif', category: 'SD', school: 'Peserta 01' },
-  { id: 'P02', no: '2', name: 'Adam Mahsyar As Sidqi', category: 'SD', school: 'Peserta 02' },
-  { id: 'P03', no: '3', name: 'Andi Alisha Hasya Putri', category: 'SD', school: 'Peserta 03' },
-  { id: 'P04', no: '4', name: 'Andi Hasan Hasyim', category: 'SD', school: 'Peserta 04' },
-  { id: 'P05', no: '5', name: 'Ghifari Ar Rafiu', category: 'SD', school: 'Peserta 05' },
-  { id: 'P06', no: '6', name: 'Avicenna Fadil Anri', category: 'SD', school: 'Peserta 06' },
-  { id: 'P07', no: '7', name: 'Athifa Urelya Arie', category: 'SD', school: 'Peserta 07' },
-  { id: 'P08', no: '8', name: 'Muhammad Athaya Nabil Mataena A', category: 'SD', school: 'Peserta 08' },
-  { id: 'P09', no: '9', name: 'Ahmad Athallah Zaidan SB', category: 'SD', school: 'Peserta 09' },
-  { id: 'P10', no: '10', name: 'Syarifa Syirena Abdullah', category: 'SD', school: 'Peserta 10' },
-  { id: 'P11', no: '11', name: 'Siti Aisyah Qur\'anita', category: 'SD', school: 'Peserta 11' },
-  { id: 'P12', no: '12', name: 'Adrian Luke Synarso', category: 'SD', school: 'Peserta 12' },
-  { id: 'P13', no: '13', name: 'Leonrado Skylar Synarso', category: 'SD', school: 'Peserta 13' },
-  { id: 'P14', no: '14', name: 'Zain Maulana Al Fatih', category: 'SD', school: 'Peserta 14' },
-  { id: 'P15', no: '15', name: 'Muhammad Aidil', category: 'SD', school: 'Peserta 15' },
-  { id: 'P16', no: '16', name: 'Muhammad Rumi Alfarizi Alfian', category: 'SD', school: 'Peserta 16' },
-  { id: 'P17', no: '17', name: 'Priscilla Lorelle Sentosa', category: 'SD', school: 'Peserta 17' },
-  { id: 'P18', no: '18', name: 'Muhammad Atlan Satria Putra P', category: 'SD', school: 'Peserta 18' },
-  { id: 'P19', no: '19', name: 'Muh. Zaidan Rafhi Putra', category: 'SD', school: 'Peserta 19' },
-  { id: 'P20', no: '20', name: 'Gevariel Benaya Putra Nugraha', category: 'SD', school: 'Peserta 20' },
-  { id: 'P21', no: '21', name: 'Zakwan Fazian', category: 'SD', school: 'Peserta 21' },
-  { id: 'P22', no: '22', name: 'Saffanah Kayyisah Akmar', category: 'SD', school: 'Peserta 22' },
-  { id: 'P23', no: '23', name: 'Akhdan Arief Athaya', category: 'SD', school: 'Peserta 23' },
-  { id: 'P24', no: '24', name: 'Eve Angeline Purwanto', category: 'SD', school: 'Peserta 24' },
-  { id: 'P25', no: '25', name: 'AS-HABUL KAHFI', category: 'SD', school: 'Peserta 25' },
-  { id: 'P26', no: '26', name: 'Elang Alam Penguasa', category: 'SD', school: 'Peserta 26' },
-  { id: 'P27', no: '27', name: 'Muhammad Budiman Andika', category: 'SD', school: 'Peserta 27' },
-  { id: 'P28', no: '28', name: 'Abu Bakar Samad Putra F.Z.', category: 'SD', school: 'Peserta 28' },
-  { id: 'P29', no: '29', name: 'Alghani Ilmi Razak', category: 'SD', school: 'Peserta 29' }
+  { id: 'P01', no: '1', name: 'Raziq Khairi Rafif', category: 'SD', school: 'SD Telkom Makassar (Kelas 5)' },
+  { id: 'P02', no: '2', name: 'Adam Mahsyar As Sidqi', category: 'SMP', school: 'SMP Ranu Harapan Islamic School (Kelas 8)' },
+  { id: 'P03', no: '3', name: 'Andi Alisha Hasya Putri', category: 'SMP', school: 'SMP Negeri 12 Makassar (Kelas IX)' },
+  { id: 'P04', no: '4', name: 'Andi Hasan Hasyim', category: 'SD', school: 'SDIT Takwa Cendekia Makassar (Kelas 5)' },
+  { id: 'P05', no: '5', name: 'Ghifari Ar Rafiu', category: 'SD', school: 'MI Al Abrar Makassar (Kelas 5)' },
+  { id: 'P06', no: '6', name: 'Avicenna Fadil Anri', category: 'SMP', school: 'SMP Islam Athirah Bukit Baruga (Kelas 8)' },
+  { id: 'P07', no: '7', name: 'Athifa Urelya Arie', category: 'SMP', school: 'SMPIT Al-Hikmah Amanah Ummah (Kelas VIII)' },
+  { id: 'P08', no: '8', name: 'Muhammad Athaya Nabil Mataena Asrul', category: 'SMP', school: 'SMP Kartika XX-I Makassar (Kelas 9)' },
+  { id: 'P09', no: '9', name: 'Ahmad Athallah Zaidan SB', category: 'SD', school: 'SDIT Ibnul Qayyim Makassar (Kelas 6)' },
+  { id: 'P10', no: '10', name: 'Syarifa Syirena Abdullah', category: 'SMP', school: 'SMP IT Mukhlisiin (Kelas IX)' },
+  { id: 'P11', no: '11', name: 'Siti Aisyah Qur\'anita', category: 'SMP', school: 'SMPIT Makassar Islamic School (Kelas VIII)' },
+  { id: 'P12', no: '12', name: 'Adrian Luke Synarso', category: 'SD', school: 'SD Pundarika Makassar (Kelas 5)' },
+  { id: 'P13', no: '13', name: 'Leonrado Skylar Synarso', category: 'SMP', school: 'SMP Pundarika Makassar (Kelas 8)' },
+  { id: 'P14', no: '14', name: 'Zain Maulana Al Fatih', category: 'SD', school: 'SDIA 68 Summarecon Mutiara Makassar (Kelas 5)' },
+  { id: 'P15', no: '15', name: 'Muhammad Aidil', category: 'SMP', school: 'SMP Negeri 1 Galesong Utara (Kelas 7)' },
+  { id: 'P16', no: '16', name: 'Muhammad Rumi Alfarizi Alfian', category: 'SD', school: 'SD Islam Athirah Makassar (Kelas 6)' },
+  { id: 'P17', no: '17', name: 'Priscilla Lorelle Sentosa', category: 'SD', school: 'Sekolah Dian Harapan Makassar (Kelas 5)' },
+  { id: 'P18', no: '18', name: 'Muhammad Atlan Satria Putra Priandy', category: 'SMP', school: 'SMP Telkom Makassar (Kelas 9)' },
+  { id: 'P19', no: '19', name: 'Muh. Zaidan Rafhi Putra', category: 'SMP', school: 'MTsN 1 Kota Makassar (Kelas 8)' },
+  { id: 'P20', no: '20', name: 'Gevariel Benaya Putra Nugraha', category: 'SD', school: 'SDK Hati Kudus Rajawali (Kelas 6)' },
+  { id: 'P21', no: '21', name: 'Zakwan Fazian', category: 'SMP', school: 'SMPIT Darul Fikri Makassar (Kelas 8)' },
+  { id: 'P22', no: '22', name: 'Saffanah Kayyisah Akmar', category: 'SMP', school: 'SMPIT Al-Fityan School Gowa (Kelas 9)' },
+  { id: 'P23', no: '23', name: 'Akhdan Arief Athaya', category: 'SMP', school: 'SMP Islam Athirah Bone (Kelas 8)' },
+  { id: 'P24', no: '24', name: 'Eve Angeline Purwanto', category: 'SMP', school: 'SMP Tunas Bangsa (Kelas 9)' },
+  { id: 'P25', no: '25', name: 'As-Habul Kahfi', category: 'SMP', school: 'SMP Negeri 7 Makassar (Kelas 8)' },
+  { id: 'P26', no: '26', name: 'Elang Alam Penguasa', category: 'SMP', school: 'UPTD SPF SMP Negeri 30 Makassar (Kelas 9)' },
+  { id: 'P27', no: '27', name: 'Muhammad Budiman Andika', category: 'SMP', school: 'UPTD SPF SMPN 49 Makassar (Kelas 7)' },
+  { id: 'P28', no: '28', name: 'Abu Bakar Samad Putra F.Z.', category: 'SMP', school: 'UPTD SPF SMPN 6 Makassar (Kelas 9)' },
+  { id: 'P29', no: '29', name: 'Alghani Ilmi Razak', category: 'SMP', school: 'SMPIT Plus Baitul Ma\'Arif (Kelas 9)' }
 ];
 
 class SpeedCodingStore {
@@ -143,17 +143,46 @@ class SpeedCodingStore {
             finishTimeElapsed: null,
             finishTimestamp: null
           }));
+        } else {
+          // Auto-migrate stale placeholder schools to official PESERTA sheet data
+          const pMapById = new Map(INITIAL_PARTICIPANTS.map(p => [p.id, p]));
+          const pMapByName = new Map(INITIAL_PARTICIPANTS.map(p => [p.name.toLowerCase().trim(), p]));
+
+          parsed.seats.forEach((seat, idx) => {
+            const matched = (seat.participantId && pMapById.get(seat.participantId)) ||
+                            (seat.participantName && pMapByName.get(seat.participantName.toLowerCase().trim())) ||
+                            (INITIAL_PARTICIPANTS[idx]);
+
+            // If seat had placeholder school or missing school, update from official data
+            if (matched && (!seat.school || seat.school.startsWith('Peserta ') || seat.school === 'Peserta Kualifikasi')) {
+              seat.participantId = matched.id;
+              seat.participantName = matched.name;
+              seat.category = matched.category;
+              seat.school = matched.school;
+              if (seat.status === 'empty' && matched.name) {
+                seat.status = 'coding';
+              }
+            }
+          });
+
+          // Update pool if it was placeholder
+          if (!parsed.participantsPool || parsed.participantsPool.length === 0 || parsed.participantsPool[0]?.school?.startsWith('Peserta ')) {
+            parsed.participantsPool = [...INITIAL_PARTICIPANTS];
+          }
         }
+
+        // Ensure googleSheetUrl targets the PESERTA sheet
+        if (!parsed.googleSheetUrl || parsed.googleSheetUrl.indexOf('sheet=') === -1) {
+          parsed.googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrV8pl3SH7VxXYS8pbg0HSUdUR_MdLMl7QSxa0n1pOHwy_uBr6o2E35P38haRn-iJVL2BKceEPRHyI/pub?output=csv&sheet=PESERTA';
+        }
+
         return parsed;
       } catch (e) {
         console.error('Failed to parse local storage state:', e);
       }
     }
 
-    // Default Fresh State
-    // Randomize the 29 participants into the 30 seats initially
-    const shuffledInit = [...INITIAL_PARTICIPANTS].sort(() => Math.random() - 0.5);
-
+    // Default Fresh State (Meja 01 - 29 assigned sequentially to 29 participants, Meja 30 empty)
     const defaultState = {
       eventTitle: 'SPEED CODING COMPETITION',
       eventSubtitle: 'Competition - Tingkat SD & SMP',
@@ -170,7 +199,7 @@ class SpeedCodingStore {
         remainingSeconds: 60 * 60
       },
       seats: DEFAULT_SEATS.map((s, idx) => {
-        const p = shuffledInit[idx];
+        const p = INITIAL_PARTICIPANTS[idx];
         return {
           ...s,
           participantId: p ? p.id : null,
@@ -184,7 +213,7 @@ class SpeedCodingStore {
         };
       }),
       participantsPool: [...INITIAL_PARTICIPANTS],
-      googleSheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrV8pl3SH7VxXYS8pbg0HSUdUR_MdLMl7QSxa0n1pOHwy_uBr6o2E35P38haRn-iJVL2BKceEPRHyI/pub?output=csv',
+      googleSheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrV8pl3SH7VxXYS8pbg0HSUdUR_MdLMl7QSxa0n1pOHwy_uBr6o2E35P38haRn-iJVL2BKceEPRHyI/pub?output=csv&sheet=PESERTA',
       appsScriptUrl: '',
       autoSyncSpreadsheet: true,
       sfxEnabled: true,
@@ -444,6 +473,36 @@ class SpeedCodingStore {
   // Update participant list from CSV or Google Sheet
   updateParticipantsPool(list) {
     this.state.participantsPool = list;
+    this.saveState(this.state, true);
+  }
+
+  // Synchronize participant list into pool AND seats & scoreboard
+  syncParticipants(list) {
+    if (!list || list.length === 0) return;
+    this.state.participantsPool = list;
+
+    const byId = new Map(list.map(p => [p.id, p]));
+    const byName = new Map(list.map(p => [p.name.toLowerCase().trim(), p]));
+
+    this.state.seats.forEach((seat, idx) => {
+      let matched = (seat.participantId && byId.get(seat.participantId)) ||
+                    (seat.participantName && byName.get(seat.participantName.toLowerCase().trim()));
+
+      if (!matched && idx < list.length && (!seat.participantName || seat.school?.startsWith('Peserta '))) {
+        matched = list[idx];
+      }
+
+      if (matched) {
+        seat.participantId = matched.id;
+        seat.participantName = matched.name;
+        seat.category = matched.category || 'SD';
+        seat.school = matched.school || '';
+        if (seat.status === 'empty' && matched.name) {
+          seat.status = 'coding';
+        }
+      }
+    });
+
     this.saveState(this.state, true);
   }
 

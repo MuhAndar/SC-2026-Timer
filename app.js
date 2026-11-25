@@ -224,11 +224,50 @@ document.addEventListener('DOMContentLoaded', () => {
         pin.classList.remove('drag-hover');
         const sourceSeatId = e.dataTransfer.getData('text/plain');
         if (sourceSeatId && sourceSeatId !== seat.id) {
-          const res = window.store.swapSeats(sourceSeatId, seat.id);
-          if (res) {
-            showToast(`🔄 Meja ${sourceSeatId.replace('S','')} & Meja ${seat.id.replace('S','')} berhasil ditukar!`);
+          // Defer store update slightly so dragend can finish cleanly before DOM re-render
+          setTimeout(() => {
+            const res = window.store.swapSeats(sourceSeatId, seat.id);
+            if (res) {
+              const nameA = res.seatA.participantName ? getShortName(res.seatA.participantName) : 'Kosong';
+              const nameB = res.seatB.participantName ? getShortName(res.seatB.participantName) : 'Kosong';
+              showToast(`🔄 Meja ${res.seatA.id.replace('S','')} (${nameA}) ⇄ Meja ${res.seatB.id.replace('S','')} (${nameB}) berhasil ditukar!`);
+              highlightSwappedPins([res.seatA.id, res.seatB.id]);
+            }
+          }, 40);
+        }
+      });
+
+      // TOUCH DRAG-AND-DROP SWAP FOR TABLETS / TOUCHSCREENS
+      pin.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          window._touchStartSeatId = seat.id;
+        }
+      }, { passive: true });
+
+      pin.addEventListener('touchend', (e) => {
+        if (!window._touchStartSeatId || window._touchStartSeatId === seat.id) {
+          window._touchStartSeatId = null;
+          return;
+        }
+        const touch = e.changedTouches[0];
+        const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+        const targetPin = targetEl ? targetEl.closest('.seat-pin') : null;
+        if (targetPin) {
+          const targetSeatId = targetPin.getAttribute('data-id');
+          if (targetSeatId && targetSeatId !== window._touchStartSeatId) {
+            const src = window._touchStartSeatId;
+            setTimeout(() => {
+              const res = window.store.swapSeats(src, targetSeatId);
+              if (res) {
+                const nameA = res.seatA.participantName ? getShortName(res.seatA.participantName) : 'Kosong';
+                const nameB = res.seatB.participantName ? getShortName(res.seatB.participantName) : 'Kosong';
+                showToast(`🔄 Meja ${res.seatA.id.replace('S','')} (${nameA}) ⇄ Meja ${res.seatB.id.replace('S','')} (${nameB}) berhasil ditukar!`);
+                highlightSwappedPins([res.seatA.id, res.seatB.id]);
+              }
+            }, 40);
           }
         }
+        window._touchStartSeatId = null;
       });
 
       pin.addEventListener('click', () => {
@@ -238,6 +277,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       container.appendChild(pin);
     });
+  }
+
+  function highlightSwappedPins(seatIds) {
+    setTimeout(() => {
+      seatIds.forEach(id => {
+        const pins = document.querySelectorAll(`.seat-pin[data-id="${id}"]`);
+        pins.forEach(p => {
+          p.classList.add('seat-pin-swapped');
+          setTimeout(() => p.classList.remove('seat-pin-swapped'), 800);
+        });
+      });
+    }, 60);
   }
 
   function handleSeatClick(seatOrId) {
@@ -600,12 +651,16 @@ document.addEventListener('DOMContentLoaded', () => {
         `<span class="compact-coding-badge">CODING</span>`;
 
       const schoolText = item.school ? `<span class="compact-school">(${item.school})</span>` : '';
+      const seatNum = item.label || item.id || '';
 
       html += `
         <div class="rank-row compact-row ${qualifierClass} ${finishedClass}">
           <span class="compact-rank-num">#${rank}</span>
+          <span class="compact-seat-badge">${seatNum}</span>
           <div class="compact-participant-name" title="${item.participantName} ${item.school ? '- ' + item.school : ''}">
-            ${item.participantName} ${schoolText}
+            <span class="participant-name-text">${item.participantName}</span>
+            <span class="category-pill ${item.category ? item.category.toLowerCase() : 'sd'}">${item.category || 'SD'}</span>
+            ${schoolText}
           </div>
           ${timeContent}
         </div>
@@ -929,20 +984,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
       counter++;
       const noVal = (noIdx !== -1 && cols[noIdx]) ? cols[noIdx] : String(counter);
-      const category = (catIdx !== -1 && cols[catIdx]) ? cols[catIdx] : 'SD';
-      const school = (schoolIdx !== -1 && cols[schoolIdx]) ? cols[schoolIdx] : 'Peserta Kualifikasi';
+      let school = (schoolIdx !== -1 && cols[schoolIdx]) ? cols[schoolIdx].trim() : 'Peserta Kualifikasi';
+      let category = (catIdx !== -1 && cols[catIdx]) ? cols[catIdx].trim().toUpperCase() : '';
+
+      // Format name nicely (Title Case)
+      const cleanName = name.trim().replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+
+      // If category not specified in a dedicated column, detect from school / class name
+      if (!category) {
+        if (/smp|mts|kelas\s*(7|8|9|vii|viii|ix)/i.test(school)) {
+          category = 'SMP';
+        } else {
+          category = 'SD';
+        }
+      } else {
+        category = category.includes('SMP') ? 'SMP' : 'SD';
+      }
 
       participants.push({
         id: `P${String(counter).padStart(2, '0')}`,
         no: noVal,
-        name: name,
-        category: category.toUpperCase().includes('SMP') ? 'SMP' : 'SD',
+        name: cleanName,
+        category: category,
         school: school
       });
     }
 
     if (participants.length === 0) throw new Error('Tidak ada data peserta yang terbaca dari spreadsheet.');
-    window.store.updateParticipantsPool(participants);
+    window.store.syncParticipants(participants);
     return participants.length;
   }
 
@@ -1079,6 +1148,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- INIT ---
   setViewMode('dual');
   renderAll(window.store.state, 'init');
+
+  // Automatic background pull from Google Sheets on page load
+  async function autoSyncFromSpreadsheetOnStartup() {
+    const url = window.store.state.googleSheetUrl;
+    if (!url) return;
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const text = await response.text();
+        parseAndLoadCSVData(text);
+      }
+    } catch (e) {
+      console.warn('Auto-sync fallback to local initial participants:', e);
+    }
+  }
+  autoSyncFromSpreadsheetOnStartup();
 
   // CRITICAL FLICKER-FREE SUBSCRIPTION:
   // When source is 'ticker', ONLY update timer numbers without re-creating floor pins or leaderboard rows!

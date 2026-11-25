@@ -120,11 +120,49 @@ document.addEventListener('DOMContentLoaded', () => {
         pin.classList.remove('drag-hover');
         const sourceSeatId = e.dataTransfer.getData('text/plain');
         if (sourceSeatId && sourceSeatId !== seat.id) {
-          const res = window.store.swapSeats(sourceSeatId, seat.id);
-          if (res) {
-            showToast(`🔄 Meja ${sourceSeatId.replace('S','')} & Meja ${seat.id.replace('S','')} berhasil ditukar!`);
+          setTimeout(() => {
+            const res = window.store.swapSeats(sourceSeatId, seat.id);
+            if (res) {
+              const nameA = res.seatA.participantName ? getShortName(res.seatA.participantName) : 'Kosong';
+              const nameB = res.seatB.participantName ? getShortName(res.seatB.participantName) : 'Kosong';
+              showToast(`🔄 Meja ${res.seatA.id.replace('S','')} (${nameA}) ⇄ Meja ${res.seatB.id.replace('S','')} (${nameB}) berhasil ditukar!`);
+              highlightSwappedPins([res.seatA.id, res.seatB.id]);
+            }
+          }, 40);
+        }
+      });
+
+      // TOUCH DRAG-AND-DROP SWAP FOR TABLETS / TOUCHSCREENS
+      pin.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          window._touchStartSeatIdOp = seat.id;
+        }
+      }, { passive: true });
+
+      pin.addEventListener('touchend', (e) => {
+        if (!window._touchStartSeatIdOp || window._touchStartSeatIdOp === seat.id) {
+          window._touchStartSeatIdOp = null;
+          return;
+        }
+        const touch = e.changedTouches[0];
+        const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+        const targetPin = targetEl ? targetEl.closest('.seat-pin') : null;
+        if (targetPin) {
+          const targetSeatId = targetPin.getAttribute('data-id');
+          if (targetSeatId && targetSeatId !== window._touchStartSeatIdOp) {
+            const src = window._touchStartSeatIdOp;
+            setTimeout(() => {
+              const res = window.store.swapSeats(src, targetSeatId);
+              if (res) {
+                const nameA = res.seatA.participantName ? getShortName(res.seatA.participantName) : 'Kosong';
+                const nameB = res.seatB.participantName ? getShortName(res.seatB.participantName) : 'Kosong';
+                showToast(`🔄 Meja ${res.seatA.id.replace('S','')} (${nameA}) ⇄ Meja ${res.seatB.id.replace('S','')} (${nameB}) berhasil ditukar!`);
+                highlightSwappedPins([res.seatA.id, res.seatB.id]);
+              }
+            }, 40);
           }
         }
+        window._touchStartSeatIdOp = null;
       });
 
       pin.addEventListener('click', () => {
@@ -315,22 +353,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === seatModal) seatModal.classList.remove('open');
   });
 
-  // Randomize Seats Operator
-  if (btnRandomizeSeatsOp) {
-    btnRandomizeSeatsOp.addEventListener('click', async () => {
-      const confirmed = await window.scratchDialog.confirm({
-        title: 'Acak Posisi Meja Peserta?',
-        message: 'Apakah Anda ingin mengacak posisi 29 peserta ke seluruh meja?',
-        confirmText: '🎲 Ya, Acak Meja',
-        cancelText: 'Batal',
-        type: 'warning',
-        icon: '🎲'
+  function highlightSwappedPins(seatIds) {
+    setTimeout(() => {
+      seatIds.forEach(id => {
+        const pins = document.querySelectorAll(`.seat-pin[data-id="${id}"]`);
+        pins.forEach(p => {
+          p.classList.add('seat-pin-swapped');
+          setTimeout(() => p.classList.remove('seat-pin-swapped'), 800);
+        });
       });
-      if (confirmed) {
-        window.store.randomizeSeats();
-        showToast('🎲 Posisi meja peserta berhasil diacak!');
-      }
-    });
+    }, 60);
   }
 
   // Auto-sync single finished seat to Google Apps Script
@@ -443,6 +475,73 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- STORE SUBSCRIPTION ---
   renderSeatPins(window.store.state);
   renderTimerToolbar(window.store.state);
+
+  // Background auto-sync from Google Sheets on page load
+  async function autoSyncSpreadsheetOperator() {
+    const url = window.store.state.googleSheetUrl;
+    if (!url) return;
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const csvText = await response.text();
+        const rawLines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        if (rawLines.length <= 1) return;
+
+        let headerIdx = -1;
+        let delimiter = ',';
+        for (let i = 0; i < rawLines.length; i++) {
+          const commas = (rawLines[i].match(/,/g) || []).length;
+          const semicolons = (rawLines[i].match(/;/g) || []).length;
+          let d = semicolons > commas ? ';' : ',';
+          const parts = rawLines[i].split(d).map(p => p.trim().toLowerCase().replace(/^"|"$/g, ''));
+          if (parts.some(p => p.includes('nama'))) {
+            headerIdx = i;
+            delimiter = d;
+            break;
+          }
+        }
+        if (headerIdx === -1) headerIdx = 0;
+
+        const headers = rawLines[headerIdx].split(delimiter).map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
+        const nameIdx = headers.findIndex(h => h.includes('nama'));
+        const catIdx = headers.findIndex(h => h.includes('kategori') || h.includes('category') || h.includes('tingkat'));
+        const schoolIdx = headers.findIndex(h => h.includes('sekolah') || h.includes('school') || h.includes('asal'));
+        const noIdx = headers.findIndex(h => h === 'no.' || h === 'no' || h.includes('nomor'));
+
+        const participants = [];
+        let counter = 0;
+        for (let i = headerIdx + 1; i < rawLines.length; i++) {
+          const cols = rawLines[i].split(delimiter).map(c => c.trim().replace(/^"|"$/g, ''));
+          if (cols.length === 0 || cols.every(c => c === '')) continue;
+          const name = (nameIdx !== -1 && cols[nameIdx]) ? cols[nameIdx] : '';
+          if (!name || name.toLowerCase().includes('nama peserta') || name.toLowerCase().includes('peserta')) continue;
+          counter++;
+          const noVal = (noIdx !== -1 && cols[noIdx]) ? cols[noIdx] : String(counter);
+          let school = (schoolIdx !== -1 && cols[schoolIdx]) ? cols[schoolIdx].trim() : 'Peserta Kualifikasi';
+          let category = (catIdx !== -1 && cols[catIdx]) ? cols[catIdx].trim().toUpperCase() : '';
+          const cleanName = name.trim().replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+          if (!category) {
+            category = /smp|mts|kelas\s*(7|8|9|vii|viii|ix)/i.test(school) ? 'SMP' : 'SD';
+          } else {
+            category = category.includes('SMP') ? 'SMP' : 'SD';
+          }
+          participants.push({
+            id: `P${String(counter).padStart(2, '0')}`,
+            no: noVal,
+            name: cleanName,
+            category: category,
+            school: school
+          });
+        }
+        if (participants.length > 0) {
+          window.store.syncParticipants(participants);
+        }
+      }
+    } catch (e) {
+      console.warn('Operator auto-sync fallback:', e);
+    }
+  }
+  autoSyncSpreadsheetOperator();
 
   window.store.subscribe((state, source) => {
     if (source === 'ticker') {
