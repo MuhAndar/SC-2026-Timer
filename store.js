@@ -3,7 +3,7 @@
  * Real-time synchronization engine with LocalStorage + BroadcastChannel + Google Sheets Support
  */
 
-const STORAGE_KEY = 'speed_coding_app_state_v1';
+const STORAGE_KEY = 'speed_coding_app_state_v2';
 const SYNC_CHANNEL = 'speed_coding_sync_channel';
 
 // Default 30 detected seats from floorplan.png
@@ -40,28 +40,37 @@ const DEFAULT_SEATS = [
   { id: "S30", label: "Meja 30", x: 91.93, y: 85.97 }
 ];
 
-// Initial demo participants for instant test
+// Official 29 Participants extracted directly from Google Spreadsheet
 const INITIAL_PARTICIPANTS = [
-  { id: 'P01', name: 'Arkananta Wijaya', category: 'SD', school: 'SD Bintang Kejora' },
-  { id: 'P02', name: 'Nadia Putri Santoso', category: 'SMP', school: 'SMP N 1 Coding' },
-  { id: 'P03', name: 'Kenzo Rafasya', category: 'SD', school: 'SD Al-Azhar 22' },
-  { id: 'P04', name: 'Alya Zahra S.', category: 'SD', school: 'SD Labschool' },
-  { id: 'P05', name: 'Fadhil Hakim Pratama', category: 'SMP', school: 'SMP Harapan Ibu' },
-  { id: 'P06', name: 'Clarissa Chen', category: 'SMP', school: 'SMP Citra Kasih' },
-  { id: 'P07', name: 'Bima Arya Pangestu', category: 'SD', school: 'SD Taruna Bangsa' },
-  { id: 'P08', name: 'Kania Kirana', category: 'SD', school: 'SD Gemilang Kreatif' },
-  { id: 'P09', name: 'Rayan Athar', category: 'SMP', school: 'SMP Prestasi Prima' },
-  { id: 'P10', name: 'Zahra Amelia', category: 'SD', school: 'SD Mentari School' },
-  { id: 'P11', name: 'Gavin Nicholas', category: 'SMP', school: 'SMP Pelita Hati' },
-  { id: 'P12', name: 'Naura Aisha', category: 'SD', school: 'SD Tunas Melati' },
-  { id: 'P13', name: 'Rafa Raditya', category: 'SD', school: 'SD Insan Cemerlang' },
-  { id: 'P14', name: 'Siti Hanifah', category: 'SMP', school: 'SMP Al-Irsyad' },
-  { id: 'P15', name: 'Keanu Alfarezel', category: 'SD', school: 'SD Semesta' },
-  { id: 'P16', name: 'Mikayla Zivanna', category: 'SD', school: 'SDGlobal Mandiri' },
-  { id: 'P17', name: 'Davin Pradipta', category: 'SMP', school: 'SMP BPK Penabur' },
-  { id: 'P18', name: 'Alvaro Malik', category: 'SMP', school: 'SMP Dian Harapan' },
-  { id: 'P19', name: 'Syifa Nuraini', category: 'SD', school: 'SD Cipta Karya' },
-  { id: 'P20', name: 'Tristan Jonathan', category: 'SMP', school: 'SMP Stella Maris' }
+  { id: 'P01', no: '1', name: 'Raziq Khairi Rafif', category: 'SD', school: 'Peserta 01' },
+  { id: 'P02', no: '2', name: 'Adam Mahsyar As Sidqi', category: 'SD', school: 'Peserta 02' },
+  { id: 'P03', no: '3', name: 'Andi Alisha Hasya Putri', category: 'SD', school: 'Peserta 03' },
+  { id: 'P04', no: '4', name: 'Andi Hasan Hasyim', category: 'SD', school: 'Peserta 04' },
+  { id: 'P05', no: '5', name: 'Ghifari Ar Rafiu', category: 'SD', school: 'Peserta 05' },
+  { id: 'P06', no: '6', name: 'Avicenna Fadil Anri', category: 'SD', school: 'Peserta 06' },
+  { id: 'P07', no: '7', name: 'Athifa Urelya Arie', category: 'SD', school: 'Peserta 07' },
+  { id: 'P08', no: '8', name: 'Muhammad Athaya Nabil Mataena A', category: 'SD', school: 'Peserta 08' },
+  { id: 'P09', no: '9', name: 'Ahmad Athallah Zaidan SB', category: 'SD', school: 'Peserta 09' },
+  { id: 'P10', no: '10', name: 'Syarifa Syirena Abdullah', category: 'SD', school: 'Peserta 10' },
+  { id: 'P11', no: '11', name: 'Siti Aisyah Qur\'anita', category: 'SD', school: 'Peserta 11' },
+  { id: 'P12', no: '12', name: 'Adrian Luke Synarso', category: 'SD', school: 'Peserta 12' },
+  { id: 'P13', no: '13', name: 'Leonrado Skylar Synarso', category: 'SD', school: 'Peserta 13' },
+  { id: 'P14', no: '14', name: 'Zain Maulana Al Fatih', category: 'SD', school: 'Peserta 14' },
+  { id: 'P15', no: '15', name: 'Muhammad Aidil', category: 'SD', school: 'Peserta 15' },
+  { id: 'P16', no: '16', name: 'Muhammad Rumi Alfarizi Alfian', category: 'SD', school: 'Peserta 16' },
+  { id: 'P17', no: '17', name: 'Priscilla Lorelle Sentosa', category: 'SD', school: 'Peserta 17' },
+  { id: 'P18', no: '18', name: 'Muhammad Atlan Satria Putra P', category: 'SD', school: 'Peserta 18' },
+  { id: 'P19', no: '19', name: 'Muh. Zaidan Rafhi Putra', category: 'SD', school: 'Peserta 19' },
+  { id: 'P20', no: '20', name: 'Gevariel Benaya Putra Nugraha', category: 'SD', school: 'Peserta 20' },
+  { id: 'P21', no: '21', name: 'Zakwan Fazian', category: 'SD', school: 'Peserta 21' },
+  { id: 'P22', no: '22', name: 'Saffanah Kayyisah Akmar', category: 'SD', school: 'Peserta 22' },
+  { id: 'P23', no: '23', name: 'Akhdan Arief Athaya', category: 'SD', school: 'Peserta 23' },
+  { id: 'P24', no: '24', name: 'Eve Angeline Purwanto', category: 'SD', school: 'Peserta 24' },
+  { id: 'P25', no: '25', name: 'AS-HABUL KAHFI', category: 'SD', school: 'Peserta 25' },
+  { id: 'P26', no: '26', name: 'Elang Alam Penguasa', category: 'SD', school: 'Peserta 26' },
+  { id: 'P27', no: '27', name: 'Muhammad Budiman Andika', category: 'SD', school: 'Peserta 27' },
+  { id: 'P28', no: '28', name: 'Abu Bakar Samad Putra F.Z.', category: 'SD', school: 'Peserta 28' },
+  { id: 'P29', no: '29', name: 'Alghani Ilmi Razak', category: 'SD', school: 'Peserta 29' }
 ];
 
 class SpeedCodingStore {
@@ -142,9 +151,12 @@ class SpeedCodingStore {
     }
 
     // Default Fresh State
+    // Randomize the 29 participants into the 30 seats initially
+    const shuffledInit = [...INITIAL_PARTICIPANTS].sort(() => Math.random() - 0.5);
+
     const defaultState = {
       eventTitle: 'SPEED CODING COMPETITION',
-      eventSubtitle: 'Scratch Championship - Tingkat SD & SMP',
+      eventSubtitle: 'Competition - Tingkat SD & SMP',
       officeName: 'Panitia Penyelenggara',
       logoUrl: '',
       currentRound: 'QUALIFICATION', // 'QUALIFICATION' (30 -> 10) or 'FINAL' (10 -> Top 3)
@@ -158,7 +170,7 @@ class SpeedCodingStore {
         remainingSeconds: 60 * 60
       },
       seats: DEFAULT_SEATS.map((s, idx) => {
-        const p = INITIAL_PARTICIPANTS[idx];
+        const p = shuffledInit[idx];
         return {
           ...s,
           participantId: p ? p.id : null,
@@ -172,7 +184,9 @@ class SpeedCodingStore {
         };
       }),
       participantsPool: [...INITIAL_PARTICIPANTS],
-      googleSheetUrl: '',
+      googleSheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrV8pl3SH7VxXYS8pbg0HSUdUR_MdLMl7QSxa0n1pOHwy_uBr6o2E35P38haRn-iJVL2BKceEPRHyI/pub?output=csv',
+      appsScriptUrl: '',
+      autoSyncSpreadsheet: true,
       sfxEnabled: true,
       lastUpdated: Date.now()
     };
@@ -321,6 +335,70 @@ class SpeedCodingStore {
       seat.finishTimestamp = null;
     }
     this.saveState(this.state, true);
+  }
+
+  swapSeats(seatIdA, seatIdB) {
+    if (seatIdA === seatIdB) return null;
+    const seatA = this.state.seats.find((s) => s.id === seatIdA);
+    const seatB = this.state.seats.find((s) => s.id === seatIdB);
+    if (!seatA || !seatB) return null;
+
+    const fields = [
+      'participantId',
+      'participantName',
+      'category',
+      'school',
+      'status',
+      'finishSeconds',
+      'finishTimeElapsed',
+      'finishTimestamp'
+    ];
+
+    const temp = {};
+    fields.forEach(f => temp[f] = seatA[f]);
+    fields.forEach(f => seatA[f] = seatB[f]);
+    fields.forEach(f => seatB[f] = temp[f]);
+
+    this.saveState(this.state, true);
+    return { seatA, seatB };
+  }
+
+  randomizeSeats(customParticipants = null) {
+    const pool = customParticipants || this.state.participantsPool || [];
+    if (pool.length === 0) return this.state.seats;
+
+    // Fisher-Yates shuffle
+    const shuffled = [...pool];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    this.state.seats.forEach((seat, idx) => {
+      if (idx < shuffled.length) {
+        const p = shuffled[idx];
+        seat.participantId = p.id || `P${String(idx + 1).padStart(2, '0')}`;
+        seat.participantName = p.name;
+        seat.category = p.category || 'SD';
+        seat.school = p.school || '';
+        seat.status = 'coding';
+        seat.finishSeconds = null;
+        seat.finishTimeElapsed = null;
+        seat.finishTimestamp = null;
+      } else {
+        seat.participantId = null;
+        seat.participantName = '';
+        seat.category = '';
+        seat.school = '';
+        seat.status = 'empty';
+        seat.finishSeconds = null;
+        seat.finishTimeElapsed = null;
+        seat.finishTimestamp = null;
+      }
+    });
+
+    this.saveState(this.state, true);
+    return this.state.seats;
   }
 
   recordSeatFinish(seatId, customElapsedSec = null) {

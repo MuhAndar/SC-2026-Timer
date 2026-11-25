@@ -72,9 +72,11 @@ class ScratchDialogSystem {
 
       // Play soft sound if available
       if (window.sfx) {
-        if (type === 'danger' || type === 'warning') window.sfx.playBeep(440, 0.15, 'sawtooth');
-        else if (type === 'success') window.sfx.playFinishFanfare();
-        else window.sfx.playBeep(650, 0.1, 'sine');
+        try {
+          if (type === 'danger' || type === 'warning') window.sfx.playBeep(440, 0.15, 'sawtooth');
+          else if (type === 'success' && typeof window.sfx.playFinishFanfare === 'function') window.sfx.playFinishFanfare();
+          else window.sfx.playBeep(650, 0.1, 'sine');
+        } catch (e) {}
       }
 
       this.backdrop.classList.add('active');
@@ -132,8 +134,10 @@ class ScratchDialogSystem {
       this.icon.textContent = icon || defaultIcon;
 
       if (window.sfx) {
-        if (type === 'success') window.sfx.playFinishFanfare();
-        else window.sfx.playBeep(700, 0.12, 'sine');
+        try {
+          if (type === 'success' && typeof window.sfx.playFinishFanfare === 'function') window.sfx.playFinishFanfare();
+          else window.sfx.playBeep(700, 0.12, 'sine');
+        } catch (e) {}
       }
 
       this.backdrop.classList.add('active');

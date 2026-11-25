@@ -16,9 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnOpPause = document.getElementById('btnOpPause');
   const btnOpReset = document.getElementById('btnOpReset');
   const checkQuickTap = document.getElementById('checkQuickTap');
+  const btnRandomizeSeatsOp = document.getElementById('btnRandomizeSeatsOp');
 
   const btnToggleSound = document.getElementById('btnToggleSound');
   const soundIcon = document.getElementById('soundIcon');
+
+  let isDraggingPin = false;
 
   // Modal Elements
   const seatModal = document.getElementById('seatModal');
@@ -84,7 +87,48 @@ document.addEventListener('DOMContentLoaded', () => {
         pin.appendChild(badge);
       }
 
+      // DRAG AND DROP SWAP
+      pin.setAttribute('draggable', 'true');
+
+      pin.addEventListener('dragstart', (e) => {
+        isDraggingPin = true;
+        pin.classList.add('is-dragging');
+        e.dataTransfer.setData('text/plain', seat.id);
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      pin.addEventListener('dragend', () => {
+        pin.classList.remove('is-dragging');
+        document.querySelectorAll('.seat-pin').forEach(el => el.classList.remove('drag-hover'));
+        setTimeout(() => { isDraggingPin = false; }, 80);
+      });
+
+      pin.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (!pin.classList.contains('drag-hover')) {
+          pin.classList.add('drag-hover');
+        }
+      });
+
+      pin.addEventListener('dragleave', () => {
+        pin.classList.remove('drag-hover');
+      });
+
+      pin.addEventListener('drop', (e) => {
+        e.preventDefault();
+        pin.classList.remove('drag-hover');
+        const sourceSeatId = e.dataTransfer.getData('text/plain');
+        if (sourceSeatId && sourceSeatId !== seat.id) {
+          const res = window.store.swapSeats(sourceSeatId, seat.id);
+          if (res) {
+            showToast(`🔄 Meja ${sourceSeatId.replace('S','')} & Meja ${seat.id.replace('S','')} berhasil ditukar!`);
+          }
+        }
+      });
+
       pin.addEventListener('click', () => {
+        if (isDraggingPin) return;
         handleSeatClick(seat);
       });
 
@@ -92,16 +136,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function handleSeatClick(seat) {
-    if (checkQuickTap.checked) {
+  function handleSeatClick(seatOrId) {
+    const seatId = typeof seatOrId === 'string' ? seatOrId : seatOrId.id;
+    const seat = window.store.state.seats.find(s => s.id === seatId) || seatOrId;
+
+    if (checkQuickTap && checkQuickTap.checked) {
       if (!seat.participantName) {
         openSeatModal(seat.id);
         return;
       }
       if (seat.status !== 'finished') {
-        window.sfx.playFinishFanfare();
+        if (window.sfx && typeof window.sfx.playFinishFanfare === 'function') {
+          try { window.sfx.playFinishFanfare(); } catch (e) {}
+        }
         const updated = window.store.recordSeatFinish(seat.id);
-        showToast(`🏁 ${seat.label} (${seat.participantName}) SELESAI pada ${updated.finishTimeElapsed}!`);
+        const finishTime = updated ? updated.finishTimeElapsed : '';
+        showToast(`🏁 ${seat.label || seat.id} (${seat.participantName}) SELESAI pada ${finishTime}!`);
+        autoPushSeatToSpreadsheet(updated);
       } else {
         openSeatModal(seat.id);
       }
@@ -196,10 +247,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    window.sfx.playFinishFanfare();
+    if (window.sfx && typeof window.sfx.playFinishFanfare === 'function') {
+      try { window.sfx.playFinishFanfare(); } catch (e) {}
+    }
     const updated = window.store.recordSeatFinish(activeSeatId);
     updateModalStatusView(updated, window.store.state.timer.elapsedSeconds);
     showToast(`🏁 ${updated.label} (${updated.participantName}) tercatat SELESAI: ${updated.finishTimeElapsed}!`);
+    autoPushSeatToSpreadsheet(updated);
   });
 
   // Manual custom time override
@@ -224,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const updated = window.store.recordSeatFinish(activeSeatId, totalSecs);
     updateModalStatusView(updated, window.store.state.timer.elapsedSeconds);
     showToast(`Waktu selesai diubah menjadi ${updated.finishTimeElapsed}`);
+    autoPushSeatToSpreadsheet(updated);
   });
 
   // Reset Finish status back to coding
@@ -256,6 +311,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnCloseSeatModal.addEventListener('click', () => seatModal.classList.remove('open'));
   btnSaveSeat.addEventListener('click', () => seatModal.classList.remove('open'));
+  seatModal.addEventListener('click', (e) => {
+    if (e.target === seatModal) seatModal.classList.remove('open');
+  });
+
+  // Randomize Seats Operator
+  if (btnRandomizeSeatsOp) {
+    btnRandomizeSeatsOp.addEventListener('click', async () => {
+      const confirmed = await window.scratchDialog.confirm({
+        title: 'Acak Posisi Meja Peserta?',
+        message: 'Apakah Anda ingin mengacak posisi 29 peserta ke seluruh meja?',
+        confirmText: '🎲 Ya, Acak Meja',
+        cancelText: 'Batal',
+        type: 'warning',
+        icon: '🎲'
+      });
+      if (confirmed) {
+        window.store.randomizeSeats();
+        showToast('🎲 Posisi meja peserta berhasil diacak!');
+      }
+    });
+  }
+
+  // Auto-sync single finished seat to Google Apps Script
+  async function autoPushSeatToSpreadsheet(seat) {
+    const url = (window.store.state.settings && window.store.state.settings.appsScriptUrl) || (window.store.state.appsScriptUrl) || '';
+    if (!url || !seat || !seat.participantName) return;
+
+    const payload = {
+      round: window.store.state.currentRound || 'QUALIFICATION',
+      results: [{
+        rank: seat.rank || 1,
+        seat: seat.label || seat.id,
+        name: seat.participantName,
+        category: seat.category || '',
+        school: seat.school || '',
+        elapsed: seat.finishTimeElapsed || '',
+        timestamp: seat.finishTimestamp || new Date().toLocaleTimeString('id-ID')
+      }]
+    };
+
+    try {
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
+      });
+      console.log('Auto-synced to Apps Script:', seat.participantName);
+    } catch (err) {
+      console.warn('Apps Script auto-sync error:', err);
+    }
+  }
 
   // --- TIMER TOOLBAR CONTROLS ---
   function renderTimerToolbar(state) {

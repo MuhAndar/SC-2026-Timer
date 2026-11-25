@@ -14,7 +14,9 @@
   <!-- TOP HEADER -->
   <header class="app-header">
     <div class="brand-wrapper">
-      <div class="scratch-cat-badge">📍</div>
+      <div class="main-logo-container" title="Speed Coding Competition">
+        <img src="assets/logo_speedcoding.png" alt="Speed Coding" class="app-main-logo">
+      </div>
       <div class="title-group">
         <h1>PANEL OPERATOR / JURI</h1>
         <p>Denah Meja Interaktif & Pencatatan Waktu Peserta</p>
@@ -48,7 +50,10 @@
       </div>
 
       <!-- Quick mode selector -->
-      <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <button class="nav-btn" id="btnRandomizeSeatsOp" style="font-size: 0.8rem; padding: 6px 12px;" title="Acak Posisi Kursi Peserta">
+          🎲 Acak Meja Peserta
+        </button>
         <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; background: var(--bg-dark); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
           <input type="checkbox" id="checkQuickTap" style="accent-color: var(--scratch-orange); width: 16px; height: 16px;">
           <span>⚡ <strong>Quick-Tap Finish</strong> (1-Klik langsung catat selesai)</span>

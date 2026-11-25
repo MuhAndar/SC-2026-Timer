@@ -17,16 +17,18 @@ class SoundEffects {
       }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      try {
+        this.ctx.resume().catch(() => {});
+      } catch (e) {}
     }
   }
 
   playBeep(freq = 600, duration = 0.15, type = 'sine') {
     if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-
     try {
+      this.init();
+      if (!this.ctx) return;
+
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = type;
@@ -40,6 +42,22 @@ class SoundEffects {
 
       osc.start();
       osc.stop(this.ctx.currentTime + duration);
+    } catch (e) {}
+  }
+
+  playFinishFanfare() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+
+      // Crisp pleasant finish fanfare (G5 -> C6 chime)
+      const notes = [783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        setTimeout(() => {
+          this.playBeep(freq, 0.22, 'triangle');
+        }, idx * 110);
+      });
     } catch (e) {}
   }
 

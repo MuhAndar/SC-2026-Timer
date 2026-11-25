@@ -14,10 +14,12 @@
   <!-- TOP HEADER -->
   <header class="app-header">
     <div class="brand-wrapper">
-      <div class="scratch-cat-badge" title="Scratch Speed Coding">🐱</div>
+      <div class="main-logo-container" title="Speed Coding Competition">
+        <img src="assets/logo_speedcoding.png" alt="Speed Coding" class="app-main-logo">
+      </div>
       <div class="title-group">
         <h1 id="headerEventTitle">SPEED CODING</h1>
-        <p id="headerEventSubtitle">Scratch Championship - Tingkat SD & SMP</p>
+        <p id="headerEventSubtitle">Competition - Tingkat SD & SMP</p>
       </div>
     </div>
 
@@ -71,7 +73,10 @@
           <span style="font-size: 0.75rem; color: var(--text-secondary);">(Klik titik untuk catat selesai)</span>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="nav-btn" id="btnRandomizeSeatsDual" style="font-size: 0.76rem; padding: 5px 10px;" title="Acak Posisi Kursi Peserta">
+            🎲 Acak Meja
+          </button>
           <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer; background: var(--bg-dark); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
             <input type="checkbox" id="checkQuickTapDual" style="accent-color: var(--scratch-orange); width: 14px; height: 14px;">
             <span>⚡ <strong>Quick-Tap Finish</strong></span>
@@ -92,30 +97,19 @@
         <div class="legend-item"><span class="legend-dot gray"></span><span>Meja Kosong</span></div>
       </div>
 
-      <!-- DUAL VIEW SPONSOR & OFFICE LOGO STRIP -->
+      <!-- DUAL VIEW SPONSOR STRIP -->
       <div class="dual-sponsor-strip">
         <div class="dual-sponsor-label">SUPPORTED & HOSTED BY:</div>
         <div class="dual-sponsor-logos">
-          <!-- Scratch Brand -->
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <svg viewBox="0 0 100 35" fill="none" style="height: 20px; width: auto;">
-              <path d="M12 28C6 28 2 24 2 18C2 12 6 8 12 8C17 8 20 11 21 14L16 16C15.5 14 14 13 12 13C9 13 7 15 7 18C7 21 9 23 12 23C14 23 15.5 22 16 20L21 22C20 25 17 28 12 28Z" fill="#FFAB19"/>
-              <path d="M26 8H31V28H26V8Z" fill="#4C97FF"/>
-              <path d="M37 14C37 10 40 8 44 8C48 8 51 10 51 14V28H46V15C46 13.5 45 13 44 13C43 13 42 13.5 42 15V28H37V14Z" fill="#0FBD8C"/>
-              <path d="M57 18C57 12 61 8 67 8C73 8 77 12 77 18C77 24 73 28 67 28C61 28 57 24 57 18ZM72 18C72 14.5 70 13 67 13C64 13 62 14.5 62 18C62 21.5 64 23 67 23C70 23 72 21.5 72 18Z" fill="#9966FF"/>
-              <path d="M82 8H87V13H93V18H87V28H82V8Z" fill="#FF4C4C"/>
-            </svg>
-            <span style="font-size: 0.72rem; font-weight: 800; color: var(--scratch-orange);">SCRATCH</span>
+          <!-- Koding Next Sponsor -->
+          <div class="sponsor-card-pill" title="Koding Next">
+            <img src="assets/logo_koding_next.png" alt="Koding Next" class="sponsor-img-kodingnext">
           </div>
 
-          <!-- Office / Organizer Host Badge -->
-          <div class="office-host-badge" id="officeLogoBadge">
-            <span style="font-size: 0.85rem;">🏢</span>
-            <span id="officeNameLabel">Panitia Penyelenggara</span>
+          <!-- Komdigi x BBLSDM Makassar Sponsor -->
+          <div class="sponsor-card-pill" title="Kementerian Komunikasi dan Digital RI">
+            <img src="assets/logo_komdigi.png" alt="Komdigi x BBLSDM Komdigi Makassar" class="sponsor-img-komdigi">
           </div>
-
-          <!-- Dynamic Custom Sponsor Logo -->
-          <img id="customSponsorImgDual" class="sponsor-mini-logo" style="display: none;" alt="Logo Sponsor">
         </div>
       </div>
     </div>
@@ -124,7 +118,7 @@
     <div class="dual-right-col">
       
       <!-- HERO SISA WAKTU BOX -->
-      <section class="timer-hero-box" style="padding: 18px 24px;">
+      <section class="timer-hero-box">
         <div class="timer-left">
           <div class="timer-tag">
             <span class="pulse-dot" id="timerPulseDotDual"></span>
@@ -176,21 +170,18 @@
     <aside class="sidebar-logo-card">
       <div style="width: 100%; text-align: center;">
         <div class="logo-section-title">OFFICIAL SPONSORS & PARTNERS</div>
-        <div class="logo-display-area">
-          <div class="scratch-official-brand">
-            <svg viewBox="0 0 100 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 28C6 28 2 24 2 18C2 12 6 8 12 8C17 8 20 11 21 14L16 16C15.5 14 14 13 12 13C9 13 7 15 7 18C7 21 9 23 12 23C14 23 15.5 22 16 20L21 22C20 25 17 28 12 28Z" fill="#FFAB19"/>
-              <path d="M26 8H31V28H26V8Z" fill="#4C97FF"/>
-              <path d="M37 14C37 10 40 8 44 8C48 8 51 10 51 14V28H46V15C46 13.5 45 13 44 13C43 13 42 13.5 42 15V28H37V14Z" fill="#0FBD8C"/>
-              <path d="M57 18C57 12 61 8 67 8C73 8 77 12 77 18C77 24 73 28 67 28C61 28 57 24 57 18ZM72 18C72 14.5 70 13 67 13C64 13 62 14.5 62 18C62 21.5 64 23 67 23C70 23 72 21.5 72 18Z" fill="#9966FF"/>
-              <path d="M82 8H87V13H93V18H87V28H82V8Z" fill="#FF4C4C"/>
-            </svg>
-            <span>SCRATCH EDITION</span>
+        <div class="logo-display-area" style="display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px 10px;">
+          <!-- Koding Next Official TV Brand -->
+          <div class="tv-sponsor-card-pill" title="Koding Next">
+            <img src="assets/logo_koding_next.png" alt="Koding Next" class="tv-sponsor-img-kodingnext">
           </div>
 
-          <img id="customLogoImgTV" class="sponsor-logo" style="display: none;" alt="Logo Sponsor">
-          
-          <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; padding: 0 10px; margin-top: 10px;">
+          <!-- Komdigi RI Official TV Brand -->
+          <div class="tv-sponsor-card-pill" title="Kementerian Komunikasi dan Digital RI">
+            <img src="assets/logo_komdigi.png" alt="Komdigi x BBLSDM Komdigi Makassar" class="tv-sponsor-img-komdigi">
+          </div>
+
+          <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; padding: 0 10px; margin-top: 10px;">
             Ajang ketangkasan logika, algoritma & kecepatan memprogram animasi/game interaktif
           </div>
         </div>
@@ -404,19 +395,34 @@
 
       <div class="form-group">
         <label class="form-label">Integrasi Google Spreadsheet (Link CSV Publik)</label>
-        <input type="url" class="form-input" id="inputGoogleSheetUrl" placeholder="Link publish CSV spreadsheet">
+        <input type="url" class="form-input" id="inputGoogleSheetUrl" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTrV8pl3SH7VxXYS8pbg0HSUdUR_MdLMl7QSxa0n1pOHwy_uBr6o2E35P38haRn-iJVL2BKceEPRHyI/pub?output=csv" placeholder="Link publish CSV spreadsheet">
         <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
           Format kolom: Nama, Kategori (SD/SMP), Sekolah
         </div>
       </div>
 
-      <div style="display: flex; gap: 8px; margin-top: 8px;">
-        <button class="nav-btn primary" id="btnSyncGoogleSheets" style="flex: 1; justify-content: center;">
-          📥 Tarik Data Spreadsheet
+      <div class="form-group">
+        <label class="form-label">Google Apps Script Web App URL (Auto-Sync Seluruh Sheet Juri)</label>
+        <input type="url" class="form-input" id="inputAppsScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+          Otomatis mengisi kolom "Kecepatan Penyelesaian" ke seluruh Sheet Juri (Penyisihan / Final) saat peserta selesai.
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+        <button class="nav-btn primary" id="btnSyncGoogleSheets" style="flex: 1; justify-content: center; min-width: 130px;">
+          📥 Tarik Google Sheet
         </button>
-        <button class="nav-btn" id="btnExportCSV" style="flex: 1; justify-content: center;">
+        <button class="nav-btn" id="btnImportLocalCSV" style="flex: 1; justify-content: center; min-width: 130px;">
+          📂 Impor CSV Komputer
+        </button>
+        <button class="nav-btn" id="btnExportCSV" style="flex: 1; justify-content: center; min-width: 130px;">
           📤 Ekspor Hasil (CSV)
         </button>
+        <button class="nav-btn" id="btnSyncAllToSheets" style="flex: 100%; justify-content: center; background: #10b981; color: #fff; font-weight: 700; border-color: #059669; margin-top: 4px;">
+          🚀 Kirim Semua Waktu Selesai ke Google Spreadsheet
+        </button>
+        <input type="file" id="inputFileCSV" accept=".csv,text/csv,text/plain" style="display: none;">
       </div>
 
       <div class="modal-actions" style="margin-top: 20px;">
