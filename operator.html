@@ -19,7 +19,7 @@
       </div>
       <div class="title-group">
         <h1>PANEL OPERATOR / JURI</h1>
-        <p>Denah Meja Interaktif & Pencatatan Waktu Peserta</p>
+        <p>Denah Posisi Interaktif & Pencatatan Waktu Peserta</p>
       </div>
     </div>
 
@@ -69,20 +69,24 @@
         </div>
         <div class="legend-item">
           <span class="legend-dot gray"></span>
-          <span>Meja Kosong</span>
+          <span>Posisi Kosong</span>
         </div>
       </div>
     </section>
 
     <!-- INTERACTIVE FLOORPLAN (PHOTO 2 CONCEPT) -->
     <section class="floorplan-wrapper" id="floorplanContainer">
+      <div class="floorplan-operator-badge">
+        <span class="operator-badge-circle"></span>
+        <span class="operator-badge-text">Operator</span>
+      </div>
       <img src="assets/floorplan.png" alt="Denah Meja Lomba Speed Coding" class="floorplan-image" id="floorplanImg">
       <!-- Interactive pins will be injected here dynamically -->
     </section>
 
     <!-- HINT BOX -->
     <div style="text-align: center; font-size: 0.85rem; color: var(--text-secondary); padding: 4px;">
-      💡 <em>Petunjuk: Klik pada titik merah meja untuk memilih nama peserta atau mencatat waktu selesai. Perubahan akan langsung tampil real-time di layar TV tanpa jeda!</em>
+      💡 <em>Petunjuk: Klik pada titik inisial peserta untuk mencatat waktu selesai atau menukar posisi. Perubahan akan langsung tampil real-time di layar TV tanpa jeda!</em>
     </div>
 
   </main>
@@ -92,7 +96,7 @@
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title">
-          <span>🪑</span> <span id="modalSeatTitle">Pengaturan Meja 01</span>
+          <span>🪑</span> <span id="modalSeatTitle">Pengaturan Peserta</span>
         </div>
         <button class="modal-close-btn" id="btnCloseSeatModal">&times;</button>
       </div>
@@ -140,7 +144,7 @@
 
       <div class="modal-actions" style="margin-top: 20px;">
         <button class="nav-btn" id="btnUnassignSeat" style="color: var(--scratch-red); margin-right: auto;">
-          🗑 Kosongkan Meja
+          🗑 Kosongkan Posisi
         </button>
         <button class="nav-btn primary" id="btnSaveSeat">Tutup & Simpan</button>
       </div>

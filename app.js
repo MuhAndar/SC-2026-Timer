@@ -31,14 +31,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const checkQuickTapSolo = document.getElementById('checkQuickTapSolo');
 
   // Round DOM Elements
+  const headerEventTitle = document.getElementById('headerEventTitle');
+  const headerEventSubtitle = document.getElementById('headerEventSubtitle');
   const headerRoundBadge = document.getElementById('headerRoundBadge');
   const headerRoundText = document.getElementById('headerRoundText');
   const btnGlobalCheer = document.getElementById('btnGlobalCheer');
   const selectRoundSetting = document.getElementById('selectRoundSetting');
   const btnAdvanceTop10 = document.getElementById('btnAdvanceTop10');
+  const btnSyncFinalistsFromSheet = document.getElementById('btnSyncFinalistsFromSheet');
+  const btnQuickSyncFinal = document.getElementById('btnQuickSyncFinal');
 
   const officeNameLabel = document.getElementById('officeNameLabel');
   const customSponsorImgDual = document.getElementById('customSponsorImgDual');
+  const customLogoImgTV = document.getElementById('customLogoImgTV');
   const inputOfficeName = document.getElementById('inputOfficeName');
 
   // Dual View Timer DOM
@@ -156,6 +161,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${parts[0]} ${parts[1].charAt(0)}.`;
   }
 
+  // 2-letter initials inside circle pin (e.g., "Raziq Khairi..." -> "RA")
+  function getNameInitials(fullName) {
+    if (!fullName || typeof fullName !== 'string') return '';
+    const clean = fullName.trim().replace(/[^a-zA-Z]/g, '');
+    if (!clean) return '';
+    return clean.slice(0, 2).toUpperCase();
+  }
+
   // --- 2. RENDER PINS ON FLOORPLAN ---
   function renderFloorPins(container, state) {
     if (!container) return;
@@ -171,8 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
       pin.style.top = `${seat.y}%`;
       pin.setAttribute('data-id', seat.id);
 
-      // Seat number inside circular pin
-      pin.textContent = seat.id.replace('S', '');
+      // 2-letter initials inside circular pin instead of table number
+      pin.textContent = getNameInitials(seat.participantName);
 
       // Permanent compact name badge if assigned
       if (seat.participantName && seat.participantName.trim().length > 0) {
@@ -230,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res) {
               const nameA = res.seatA.participantName ? getShortName(res.seatA.participantName) : 'Kosong';
               const nameB = res.seatB.participantName ? getShortName(res.seatB.participantName) : 'Kosong';
-              showToast(`🔄 Meja ${res.seatA.id.replace('S','')} (${nameA}) ⇄ Meja ${res.seatB.id.replace('S','')} (${nameB}) berhasil ditukar!`);
+              showToast(`🔄 ${nameA} ⇄ ${nameB} berhasil ditukar!`);
               highlightSwappedPins([res.seatA.id, res.seatB.id]);
             }
           }, 40);
@@ -261,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if (res) {
                 const nameA = res.seatA.participantName ? getShortName(res.seatA.participantName) : 'Kosong';
                 const nameB = res.seatB.participantName ? getShortName(res.seatB.participantName) : 'Kosong';
-                showToast(`🔄 Meja ${res.seatA.id.replace('S','')} (${nameA}) ⇄ Meja ${res.seatB.id.replace('S','')} (${nameB}) berhasil ditukar!`);
+                showToast(`🔄 ${nameA} ⇄ ${nameB} berhasil ditukar!`);
                 highlightSwappedPins([res.seatA.id, res.seatB.id]);
               }
             }, 40);
@@ -295,8 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const seatId = typeof seatOrId === 'string' ? seatOrId : seatOrId.id;
     const seat = window.store.state.seats.find(s => s.id === seatId) || seatOrId;
 
-    const isQuickTap = (checkQuickTapDual && checkQuickTapDual.checked) || 
-                       (checkQuickTapSolo && checkQuickTapSolo.checked);
+    const isQuickTap = (checkQuickTapDual && checkQuickTapDual.checked) ||
+      (checkQuickTapSolo && checkQuickTapSolo.checked);
 
     if (isQuickTap) {
       if (!seat.participantName) {
@@ -305,11 +318,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (seat.status !== 'finished') {
         if (window.sfx && typeof window.sfx.playFinishFanfare === 'function') {
-          try { window.sfx.playFinishFanfare(); } catch (e) {}
+          try { window.sfx.playFinishFanfare(); } catch (e) { }
         }
         const updated = window.store.recordSeatFinish(seat.id);
         const finishTime = updated ? updated.finishTimeElapsed : '';
-        showToast(`🏁 ${seat.label || seat.id} (${seat.participantName}) SELESAI pada ${finishTime}!`);
+        showToast(`🏁 ${seat.participantName} SELESAI pada ${finishTime}!`);
         autoPushSeatToSpreadsheet(updated);
       } else {
         openSeatModal(seat.id);
@@ -326,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const seat = state.seats.find(s => s.id === seatId);
     if (!seat) return;
 
-    modalSeatTitle.textContent = `${seat.label || seat.id} - ${seat.participantName || 'Belum Ada Peserta'}`;
+    modalSeatTitle.textContent = seat.participantName ? `Posisi: ${seat.participantName}` : 'Pilih Peserta Untuk Posisi Ini';
 
     const pool = state.participantsPool || [];
     const assignedIds = new Set(state.seats.filter(s => s.id !== seatId && s.participantId).map(s => s.participantId));
@@ -337,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isSelected = p.id === seat.participantId;
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = `${p.name} (${p.category} - ${p.school}) ${isTaken ? '⚠️ [Meja Lain]' : ''}`;
+      opt.textContent = `${p.name} (${p.category} - ${p.school}) ${isTaken ? '⚠️ [Posisi Lain]' : ''}`;
       if (isSelected) opt.selected = true;
       selectParticipant.appendChild(opt);
     });
@@ -397,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!seat || !seat.participantName) {
       await window.scratchDialog.alert({
         title: 'Pilih Peserta Terlebih Dahulu',
-        message: 'Silakan pilih nama peserta dari dropdown terlebih dahulu untuk meja ini sebelum mencatat waktu selesai.',
+        message: 'Silakan pilih nama peserta dari dropdown terlebih dahulu untuk posisi ini sebelum mencatat waktu selesai.',
         type: 'warning',
         icon: '🐱'
       });
@@ -405,11 +418,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (window.sfx && typeof window.sfx.playFinishFanfare === 'function') {
-      try { window.sfx.playFinishFanfare(); } catch (e) {}
+      try { window.sfx.playFinishFanfare(); } catch (e) { }
     }
     const updated = window.store.recordSeatFinish(activeSeatId);
     updateModalStatusView(updated, window.store.state.timer.elapsedSeconds);
-    showToast(`🏁 ${updated.label} (${updated.participantName}) SELESAI: ${updated.finishTimeElapsed}!`);
+    showToast(`🏁 ${updated.participantName} SELESAI: ${updated.finishTimeElapsed}!`);
     autoPushSeatToSpreadsheet(updated);
   });
 
@@ -439,17 +452,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnResetFinish.addEventListener('click', () => {
     if (!activeSeatId) return;
+    const seatBefore = window.store.state.seats.find(s => s.id === activeSeatId);
     window.store.resetSeatFinish(activeSeatId);
     const updated = window.store.state.seats.find(s => s.id === activeSeatId);
     updateModalStatusView(updated, window.store.state.timer.elapsedSeconds);
     showToast('Status peserta dikembalikan ke Sedang Coding.');
+    if (seatBefore && seatBefore.participantName) {
+      autoPushSeatToSpreadsheet(seatBefore, 'clear');
+    }
   });
 
   btnUnassignSeat.addEventListener('click', async () => {
     if (!activeSeatId) return;
     const confirmed = await window.scratchDialog.confirm({
-      title: 'Kosongkan Meja Ini?',
-      message: 'Peserta akan dihapus dari penugasan meja ini. Apakah Anda yakin?',
+      title: 'Kosongkan Posisi Ini?',
+      message: 'Peserta akan dihapus dari penugasan posisi ini. Apakah Anda yakin?',
       confirmText: 'Ya, Kosongkan',
       cancelText: 'Batal',
       type: 'warning',
@@ -457,9 +474,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (confirmed) {
+      const seatBefore = window.store.state.seats.find(s => s.id === activeSeatId);
       window.store.assignParticipantToSeat(activeSeatId, null);
       seatModal.classList.remove('open');
-      showToast('Meja telah dikosongkan.');
+      showToast('Posisi peserta telah dikosongkan.');
+      if (seatBefore && seatBefore.participantName) {
+        autoPushSeatToSpreadsheet(seatBefore, 'clear');
+      }
     }
   });
 
@@ -478,11 +499,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderBranding(state) {
     const isQual = (state.currentRound || 'QUALIFICATION') === 'QUALIFICATION';
-    
+
     if (headerEventTitle) headerEventTitle.textContent = state.eventTitle || 'SPEED CODING';
     if (headerEventSubtitle) {
-      headerEventSubtitle.textContent = isQual ? 
-        'Babak Kualifikasi (30 Peserta -> 10 Lolos Final)' : 
+      headerEventSubtitle.textContent = isQual ?
+        'Babak Kualifikasi (30 Peserta -> 10 Lolos Final)' :
         'Babak Grand Final (10 Finalis -> Juara 1, 2, 3)';
     }
 
@@ -490,9 +511,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isQual) {
         headerRoundBadge.className = 'round-badge-pill qualification';
         headerRoundBadge.innerHTML = '<span>🟡</span> <span>BABAK KUALIFIKASI (TOP 10)</span>';
+        if (btnQuickSyncFinal) btnQuickSyncFinal.style.display = 'none';
       } else {
         headerRoundBadge.className = 'round-badge-pill final';
         headerRoundBadge.innerHTML = '<span>👑</span> <span>BABAK GRAND FINAL (TOP 3)</span>';
+        if (btnQuickSyncFinal) btnQuickSyncFinal.style.display = 'inline-flex';
       }
     }
 
@@ -623,10 +646,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function generateLeaderboardHTML(list) {
     if (list.length === 0) {
+      const isFinal = (window.store.state.currentRound || 'QUALIFICATION') === 'FINAL';
+      const emptyMsg = isFinal ?
+        'Menunggu Pengumuman Finalis Resmi dari Dewan Juri<br><small style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;">(Mengacu pada Sheet: "Rekapitulasi Final")</small>' :
+        'Belum ada peserta terdaftar';
       return `
-        <div class="empty-state-notice" style="grid-column: 1 / -1; padding: 20px;">
-          <div style="font-size: 2rem; margin-bottom: 6px;">🎮</div>
-          <h4>Belum ada peserta terdaftar</h4>
+        <div class="empty-state-notice" style="grid-column: 1 / -1; padding: 36px 16px; text-align: center;">
+          <div style="font-size: 2.2rem; margin-bottom: 8px;">⏳</div>
+          <h4 style="color: #fff; font-size: 1.05rem; font-weight: 700; line-height: 1.5;">${emptyMsg}</h4>
         </div>
       `;
     }
@@ -637,26 +664,17 @@ document.addEventListener('DOMContentLoaded', () => {
     list.forEach((item, index) => {
       const isFinished = item.status === 'finished';
       const rank = index + 1;
-
-      // Qualifier top 10 accent during qualification
-      let qualifierClass = '';
-      if (isQual && rank <= 10) {
-        qualifierClass = 'qualifier-top10';
-      }
-
       const finishedClass = isFinished ? 'is-finished' : '';
 
-      const timeContent = isFinished ? 
+      const timeContent = isFinished ?
         `<span class="compact-time-badge">${item.finishTimeElapsed || '00:00'}</span>` :
         `<span class="compact-coding-badge">CODING</span>`;
 
       const schoolText = item.school ? `<span class="compact-school">(${item.school})</span>` : '';
-      const seatNum = item.label || item.id || '';
 
       html += `
-        <div class="rank-row compact-row ${qualifierClass} ${finishedClass}">
+        <div class="rank-row compact-row ${finishedClass}">
           <span class="compact-rank-num">#${rank}</span>
-          <span class="compact-seat-badge">${seatNum}</span>
           <div class="compact-participant-name" title="${item.participantName} ${item.school ? '- ' + item.school : ''}">
             <span class="participant-name-text">${item.participantName}</span>
             <span class="category-pill ${item.category ? item.category.toLowerCase() : 'sd'}">${item.category || 'SD'}</span>
@@ -714,7 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnAdvanceTop10.addEventListener('click', async () => {
       const confirmed = await window.scratchDialog.confirm({
         title: 'Loloskan Top 10 ke Final?',
-        message: 'Sistem akan secara otomatis mengambil <strong>10 peserta terbaik</strong> dari babak kualifikasi, menempatkannya ke Meja 01–10, mengosongkan meja lainnya, dan mengatur ronde ke <strong>Babak Final</strong>.<br><br>Lanjutkan?',
+        message: 'Sistem akan secara otomatis mengambil <strong>10 peserta terbaik</strong> dari babak kualifikasi, menempatkannya ke 10 posisi Final, mengosongkan posisi lainnya, dan mengatur ronde ke <strong>Babak Final</strong>.<br><br>Lanjutkan?',
         confirmText: 'Ya, Masuk ke Babak Final! 🏆',
         cancelText: 'Batal',
         type: 'warning',
@@ -729,18 +747,177 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --- TARIK FINALIS DARI SHEET "REKAPITULASI FINAL" ---
+  async function fetchFinalistsFromSpreadsheet(isSilent = false) {
+    const state = window.store.state;
+    const appsScriptUrl = state.appsScriptUrl || 'https://script.google.com/macros/s/AKfycbw1-xQQ_2jqLQ0PfDvaA6qWP__kxHt5_Di6Sd5Hy2RDbAUYJQSs3wjARtvJnV4bwXUA/exec';
+
+    try {
+      if (btnQuickSyncFinal) btnQuickSyncFinal.textContent = '⏳ Menarik...';
+
+      let finalists = [];
+      let sourceName = 'Rekapitulasi Final';
+      let fetchedSuccess = false;
+
+      // 1. CARA UTAMA: Lewat Google Apps Script Connector
+      // Apps Script membuka langsung sheet "Rekapitulasi Final" secara real-time tanpa delay CDN cache
+      if (appsScriptUrl && appsScriptUrl.includes('AKfycb')) {
+        const fetchUrl = `${appsScriptUrl}${appsScriptUrl.includes('?') ? '&' : '?'}sheet=final&t=${Date.now()}`;
+        const res = await fetch(fetchUrl);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.status === 'success') {
+            fetchedSuccess = true;
+            sourceName = json.sheet || 'Rekapitulasi Final';
+
+            // Validasi Keamanan: Jika script masih mengembalikan sheet 'PESERTA', jangan masukkan 29 peserta ke final!
+            if (sourceName.toUpperCase().indexOf('FINAL') === -1) {
+              console.warn('Apps Script belum diperbarui untuk sheet Final. Sheet terbaca:', sourceName);
+              if (!isSilent) {
+                showToast(`⚠️ Sheet terbaca "${sourceName}". Mohon salin kode google_apps_script.js terbaru ke Apps Script lalu Deploy Versi Baru!`);
+              }
+              return;
+            }
+
+            if (Array.isArray(json.participants)) {
+              json.participants.forEach((p, idx) => {
+                if (p.name && p.name.trim().length >= 3) {
+                  finalists.push({
+                    id: `F${String(idx + 1).padStart(2, '0')}`,
+                    name: p.name.trim(),
+                    category: p.category || 'SD',
+                    school: p.school || ''
+                  });
+                }
+              });
+            }
+          }
+        }
+      }
+
+      // 2. CARA CADANGAN: Jika ada GID khusus sheet Final yang dimasukkan di Google Sheet URL
+      if (!fetchedSuccess && state.googleSheetFinalUrl) {
+        const gidMatch = state.googleSheetFinalUrl.match(/[#&?]gid=([0-9]+)/);
+        if (gidMatch && gidMatch[1] && gidMatch[1] !== '0') {
+          const gid = gidMatch[1];
+          const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTrV8pl3SH7VxXYS8pbg0HSUdUR_MdLMl7QSxa0n1pOHwy_uBr6o2E35P38haRn-iJVL2BKceEPRHyI/pub?output=csv&gid=${gid}&t=${Date.now()}`;
+          const res = await fetch(csvUrl, { cache: 'no-cache' });
+          if (res.ok) {
+            const text = await res.text();
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            let headerIdx = -1;
+            let nameCol = -1;
+            let schoolCol = -1;
+            for (let i = 0; i < Math.min(10, lines.length); i++) {
+              const parts = lines[i].split(',').map(p => p.trim().replace(/^"|"$/g, '').toLowerCase());
+              for (let c = 0; c < parts.length; c++) {
+                if (parts[c].includes('nama')) nameCol = c;
+                if (parts[c].includes('sekolah') || parts[c].includes('kelas')) schoolCol = c;
+              }
+              if (nameCol !== -1) {
+                headerIdx = i;
+                break;
+              }
+            }
+            if (headerIdx !== -1 && nameCol !== -1) {
+              for (let i = headerIdx + 1; i < lines.length; i++) {
+                const parts = lines[i].split(',').map(p => p.trim().replace(/^"|"$/g, ''));
+                const name = parts[nameCol];
+                if (name && name.toLowerCase() !== 'nama peserta' && name.replace(/[^a-zA-Z]/g, '').length >= 3) {
+                  const rawSchool = schoolCol !== -1 ? (parts[schoolCol] || '') : '';
+                  const cat = rawSchool.toLowerCase().includes('smp') ? 'SMP' : (rawSchool.toLowerCase().includes('sd') ? 'SD' : 'SD');
+                  finalists.push({
+                    id: `F${String(finalists.length + 1).padStart(2, '0')}`,
+                    name: name,
+                    category: cat,
+                    school: rawSchool
+                  });
+                }
+              }
+              fetchedSuccess = true;
+            }
+          }
+        }
+      }
+
+      if (fetchedSuccess) {
+        if (finalists.length > 0) {
+          window.store.loadFinalists(finalists);
+          if (!isSilent) showToast(`🏆 Berhasil memuat ${finalists.length} Finalis dari "${sourceName}"!`);
+        } else {
+          window.store.loadFinalists([]);
+          if (!isSilent) showToast(`ℹ️ Sheet "${sourceName}" masih kosong. Denah dikosongkan menunggu input juri.`);
+        }
+      } else {
+        if (!isSilent) {
+          showToast('⚠️ Gagal memuat sheet Final. Pastikan Apps Script telah di-deploy dengan versi terbaru.');
+        }
+      }
+    } catch (err) {
+      console.warn('Error fetching Rekapitulasi Final:', err);
+      if (!isSilent) showToast('Gagal memuat Rekapitulasi Final. Periksa koneksi.');
+    } finally {
+      if (btnQuickSyncFinal) btnQuickSyncFinal.textContent = '🔄 Tarik Finalis';
+    }
+  }
+
+  if (btnSyncFinalistsFromSheet) {
+    btnSyncFinalistsFromSheet.addEventListener('click', () => {
+      fetchFinalistsFromSpreadsheet(false);
+      settingsModal.classList.remove('open');
+    });
+  }
+
+  if (btnQuickSyncFinal) {
+    btnQuickSyncFinal.addEventListener('click', () => {
+      fetchFinalistsFromSpreadsheet(false);
+    });
+  }
+
+  if (headerRoundBadge) {
+    headerRoundBadge.style.cursor = 'pointer';
+    headerRoundBadge.addEventListener('click', () => {
+      const current = window.store.state.currentRound || 'QUALIFICATION';
+      const nextRound = current === 'QUALIFICATION' ? 'FINAL' : 'QUALIFICATION';
+      window.store.setRound(nextRound);
+      showToast(`🔄 Beralih ke ${nextRound === 'FINAL' ? 'Babak Grand Final' : 'Babak Kualifikasi'}`);
+      if (nextRound === 'FINAL') {
+        fetchFinalistsFromSpreadsheet(false);
+      }
+    });
+  }
+
+  // Background gentle auto-check every 25s when in Final Mode and timer is NOT running
+  setInterval(() => {
+    const state = window.store.state;
+    if (state.currentRound === 'FINAL' && (!state.timer || state.timer.status !== 'running')) {
+      fetchFinalistsFromSpreadsheet(true);
+    }
+  }, 25000);
+
   // --- 6. FULLSCREEN & SOUND ---
+  document.addEventListener('fullscreenchange', () => {
+    const isFull = !!document.fullscreenElement;
+    document.body.classList.toggle('fullscreen-tv', isFull);
+    btnToggleFullscreen.textContent = isFull ? '❌ Exit Fullscreen' : '⛶ Fullscreen';
+  });
+
   btnToggleFullscreen.addEventListener('click', () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().then(() => {
         document.body.classList.add('fullscreen-tv');
         btnToggleFullscreen.textContent = '❌ Exit Fullscreen';
-      }).catch(err => alert(err.message));
-    } else {
-      document.exitFullscreen().then(() => {
-        document.body.classList.remove('fullscreen-tv');
-        btnToggleFullscreen.textContent = '⛶ Fullscreen';
+      }).catch(() => {
+        // Fallback if browser security denies requestFullscreen without click
+        document.body.classList.toggle('fullscreen-tv');
       });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().then(() => {
+          document.body.classList.remove('fullscreen-tv');
+          btnToggleFullscreen.textContent = '⛶ Fullscreen';
+        }).catch(() => { });
+      }
     }
   });
 
@@ -798,35 +975,37 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnRandomizeSeatsDual) {
     btnRandomizeSeatsDual.addEventListener('click', async () => {
       const confirmed = await window.scratchDialog.confirm({
-        title: 'Acak Posisi Meja Peserta?',
-        message: 'Apakah Anda ingin mengacak posisi 29 peserta ke seluruh meja?',
-        confirmText: '🎲 Ya, Acak Meja',
+        title: 'Acak Posisi Peserta?',
+        message: 'Apakah Anda ingin mengacak penempatan peserta ke seluruh posisi?',
+        confirmText: '🎲 Ya, Acak Posisi',
         cancelText: 'Batal',
         type: 'warning',
         icon: '🎲'
       });
       if (confirmed) {
         window.store.randomizeSeats();
-        showToast('🎲 Posisi meja peserta berhasil diacak!');
+        showToast('🎲 Posisi peserta berhasil diacak!');
       }
     });
   }
 
-  // Auto-sync single finished seat to Google Apps Script
-  async function autoPushSeatToSpreadsheet(seat) {
+  // Auto-sync single finished seat or deletion/reset to Google Apps Script
+  async function autoPushSeatToSpreadsheet(seat, action = 'record') {
     const url = (window.store.state.settings && window.store.state.settings.appsScriptUrl) || (window.store.state.appsScriptUrl) || '';
     if (!url || !seat || !seat.participantName) return;
 
     const payload = {
       round: window.store.state.currentRound || 'QUALIFICATION',
+      action: action,
       results: [{
         rank: seat.rank || 1,
         seat: seat.label || seat.id,
         name: seat.participantName,
         category: seat.category || '',
         school: seat.school || '',
-        elapsed: seat.finishTimeElapsed || '',
-        timestamp: seat.finishTimestamp || new Date().toLocaleTimeString('id-ID')
+        elapsed: action === 'clear' ? '' : (seat.finishTimeElapsed || ''),
+        action: action,
+        timestamp: action === 'clear' ? '' : (seat.finishTimestamp || new Date().toLocaleTimeString('id-ID'))
       }]
     };
 
@@ -837,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload)
       });
-      console.log('Auto-synced to Apps Script:', seat.participantName);
+      console.log(`Auto-synced [${action}] to Apps Script:`, seat.participantName);
     } catch (err) {
       console.warn('Apps Script auto-sync error:', err);
     }
@@ -868,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const sortedFinished = [...seats].sort((a,b) => (a.finishSeconds || 0) - (b.finishSeconds || 0));
+      const sortedFinished = [...seats].sort((a, b) => (a.finishSeconds || 0) - (b.finishSeconds || 0));
       const results = sortedFinished.map((s, idx) => ({
         rank: idx + 1,
         seat: s.label || s.id,
@@ -1103,15 +1282,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnExportCSV.addEventListener('click', () => {
     const seats = window.store.state.seats || [];
-    let csv = 'Rank,No Meja,Nama Peserta,Kategori,Sekolah,Status,Waktu Selesai (Elapsed),Waktu Jam Selesai\n';
+    let csv = 'Rank,Nama Peserta,Kategori,Sekolah,Status,Waktu Selesai (Elapsed),Waktu Jam Selesai\n';
 
-    const finished = seats.filter(s => s.status === 'finished').sort((a,b) => (a.finishSeconds || 0) - (b.finishSeconds || 0));
+    const finished = seats.filter(s => s.status === 'finished').sort((a, b) => (a.finishSeconds || 0) - (b.finishSeconds || 0));
     const coding = seats.filter(s => s.status === 'coding');
     const combined = [...finished, ...coding];
 
     combined.forEach((s, idx) => {
       const rank = s.status === 'finished' ? idx + 1 : '-';
-      csv += `"${rank}","${s.label || s.id}","${s.participantName}","${s.category}","${s.school}","${s.status}","${s.finishTimeElapsed || '-'}","${s.finishTimestamp || '-'}"\n`;
+      csv += `"${rank}","${s.participantName || '-'}","${s.category || '-'}","${s.school || '-'}","${s.status}","${s.finishTimeElapsed || '-'}","${s.finishTimestamp || '-'}"\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

@@ -8,36 +8,35 @@ const SYNC_CHANNEL = 'speed_coding_sync_channel';
 
 // Default 30 detected seats from floorplan.png
 const DEFAULT_SEATS = [
-  { id: "S01", label: "Meja 01", x: 10.41, y: 14.19 },
-  { id: "S02", label: "Meja 02", x: 21.35, y: 8.88 },
-  { id: "S03", label: "Meja 03", x: 37.09, y: 19.9 },
-  { id: "S04", label: "Meja 04", x: 43.36, y: 8.89 },
-  { id: "S05", label: "Meja 05", x: 58.8, y: 19.9 },
-  { id: "S06", label: "Meja 06", x: 65.06, y: 8.88 },
-  { id: "S07", label: "Meja 07", x: 87.02, y: 8.89 },
-  { id: "S08", label: "Meja 08", x: 10.4, y: 33.81 },
-  { id: "S09", label: "Meja 09", x: 19.62, y: 26.31 },
-  { id: "S10", label: "Meja 10", x: 82.72, y: 34.19 },
-  { id: "S11", label: "Meja 11", x: 91.93, y: 26.69 },
-  { id: "S12", label: "Meja 12", x: 19.62, y: 46.33 },
-  { id: "S13", label: "Meja 13", x: 47.19, y: 45.04 },
-  { id: "S14", label: "Meja 14", x: 68.04, y: 45.04 },
-  { id: "S15", label: "Meja 15", x: 91.93, y: 46.72 },
-  { id: "S16", label: "Meja 16", x: 10.41, y: 53.83 },
-  { id: "S17", label: "Meja 17", x: 19.62, y: 66.35 },
-  { id: "S18", label: "Meja 18", x: 40.92, y: 56.09 },
-  { id: "S19", label: "Meja 19", x: 61.76, y: 56.1 },
-  { id: "S20", label: "Meja 20", x: 82.72, y: 54.24 },
-  { id: "S21", label: "Meja 21", x: 91.93, y: 66.75 },
-  { id: "S22", label: "Meja 22", x: 10.41, y: 73.87 },
-  { id: "S23", label: "Meja 23", x: 43.35, y: 80.83 },
-  { id: "S24", label: "Meja 24", x: 65.07, y: 80.84 },
-  { id: "S25", label: "Meja 25", x: 82.72, y: 74.26 },
-  { id: "S26", label: "Meja 26", x: 15.32, y: 91.3 },
-  { id: "S27", label: "Meja 27", x: 37.09, y: 91.88 },
-  { id: "S28", label: "Meja 28", x: 58.8, y: 91.88 },
-  { id: "S29", label: "Meja 29", x: 80.98, y: 91.27 },
-  { id: "S30", label: "Meja 30", x: 91.93, y: 85.97 }
+  { id: "S01", label: "Posisi 01", x: 8.18, y: 16.84 },
+  { id: "S02", label: "Posisi 02", x: 19.41, y: 11.52 },
+  { id: "S03", label: "Posisi 03", x: 28.76, y: 22.35 },
+  { id: "S04", label: "Posisi 04", x: 35.19, y: 11.33 },
+  { id: "S05", label: "Posisi 05", x: 45.81, y: 22.35 },
+  { id: "S06", label: "Posisi 06", x: 52.24, y: 11.33 },
+  { id: "S07", label: "Posisi 07", x: 63.04, y: 22.35 },
+  { id: "S08", label: "Posisi 08", x: 69.47, y: 11.34 },
+  { id: "S09", label: "Posisi 09", x: 86.75, y: 11.52 },
+  { id: "S10", label: "Posisi 10", x: 8.19, y: 35.08 },
+  { id: "S11", label: "Posisi 11", x: 17.63, y: 27.58 },
+  { id: "S12", label: "Posisi 12", x: 82.34, y: 35.46 },
+  { id: "S13", label: "Posisi 13", x: 91.79, y: 27.97 },
+  { id: "S14", label: "Posisi 14", x: 17.63, y: 46.23 },
+  { id: "S15", label: "Posisi 15", x: 91.79, y: 46.23 },
+  { id: "S16", label: "Posisi 16", x: 8.18, y: 53.73 },
+  { id: "S17", label: "Posisi 17", x: 17.63, y: 64.50 },
+  { id: "S18", label: "Posisi 18", x: 82.34, y: 53.73 },
+  { id: "S19", label: "Posisi 19", x: 91.79, y: 64.88 },
+  { id: "S20", label: "Posisi 20", x: 8.18, y: 72.00 },
+  { id: "S21", label: "Posisi 21", x: 36.76, y: 77.70 },
+  { id: "S22", label: "Posisi 22", x: 53.81, y: 77.51 },
+  { id: "S23", label: "Posisi 23", x: 71.03, y: 77.70 },
+  { id: "S24", label: "Posisi 24", x: 82.34, y: 72.38 },
+  { id: "S25", label: "Posisi 25", x: 12.99, y: 88.72 },
+  { id: "S26", label: "Posisi 26", x: 30.33, y: 88.72 },
+  { id: "S27", label: "Posisi 27", x: 47.38, y: 88.52 },
+  { id: "S28", label: "Posisi 28", x: 64.60, y: 88.72 },
+  { id: "S29", label: "Posisi 29", x: 86.93, y: 88.43 }
 ];
 
 // Official 29 Participants extracted directly from Google Spreadsheet PESERTA sheet
@@ -131,18 +130,23 @@ class SpeedCodingStore {
             parsed.timer.status = 'finished';
           }
         }
-        if (!parsed.seats || parsed.seats.length === 0) {
-          parsed.seats = DEFAULT_SEATS.map((s, idx) => ({
-            ...s,
-            participantId: INITIAL_PARTICIPANTS[idx]?.id || null,
-            participantName: INITIAL_PARTICIPANTS[idx]?.name || '',
-            category: INITIAL_PARTICIPANTS[idx]?.category || '',
-            school: INITIAL_PARTICIPANTS[idx]?.school || '',
-            status: INITIAL_PARTICIPANTS[idx] ? 'coding' : 'empty',
-            finishSeconds: null,
-            finishTimeElapsed: null,
-            finishTimestamp: null
-          }));
+        if (!parsed.seats || parsed.seats.length === 0 || parsed.layoutVersion !== '2.0' || parsed.seats.length !== DEFAULT_SEATS.length) {
+          parsed.layoutVersion = '2.0';
+          const oldSeats = parsed.seats || [];
+          parsed.seats = DEFAULT_SEATS.map((defSeat, idx) => {
+            const existing = oldSeats[idx] || {};
+            return {
+              ...defSeat,
+              participantId: existing.participantId || INITIAL_PARTICIPANTS[idx]?.id || null,
+              participantName: existing.participantName || INITIAL_PARTICIPANTS[idx]?.name || '',
+              category: existing.category || INITIAL_PARTICIPANTS[idx]?.category || '',
+              school: existing.school || INITIAL_PARTICIPANTS[idx]?.school || '',
+              status: existing.status || (INITIAL_PARTICIPANTS[idx] ? 'coding' : 'empty'),
+              finishSeconds: existing.finishSeconds || null,
+              finishTimeElapsed: existing.finishTimeElapsed || null,
+              finishTimestamp: existing.finishTimestamp || null
+            };
+          });
         } else {
           // Auto-migrate stale placeholder schools to official PESERTA sheet data
           const pMapById = new Map(INITIAL_PARTICIPANTS.map(p => [p.id, p]));
@@ -174,6 +178,11 @@ class SpeedCodingStore {
         // Ensure googleSheetUrl targets the PESERTA sheet
         if (!parsed.googleSheetUrl || parsed.googleSheetUrl.indexOf('sheet=') === -1) {
           parsed.googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrV8pl3SH7VxXYS8pbg0HSUdUR_MdLMl7QSxa0n1pOHwy_uBr6o2E35P38haRn-iJVL2BKceEPRHyI/pub?output=csv&sheet=PESERTA';
+        }
+
+        // Official Google Apps Script Web App URL
+        if (!parsed.appsScriptUrl || parsed.appsScriptUrl.indexOf('AKfycb') === -1) {
+          parsed.appsScriptUrl = 'https://script.google.com/macros/s/AKfycbw1-xQQ_2jqLQ0PfDvaA6qWP__kxHt5_Di6Sd5Hy2RDbAUYJQSs3wjARtvJnV4bwXUA/exec';
         }
 
         return parsed;
@@ -214,7 +223,7 @@ class SpeedCodingStore {
       }),
       participantsPool: [...INITIAL_PARTICIPANTS],
       googleSheetUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrV8pl3SH7VxXYS8pbg0HSUdUR_MdLMl7QSxa0n1pOHwy_uBr6o2E35P38haRn-iJVL2BKceEPRHyI/pub?output=csv&sheet=PESERTA',
-      appsScriptUrl: '',
+      appsScriptUrl: 'https://script.google.com/macros/s/AKfycbw1-xQQ_2jqLQ0PfDvaA6qWP__kxHt5_Di6Sd5Hy2RDbAUYJQSs3wjARtvJnV4bwXUA/exec',
       autoSyncSpreadsheet: true,
       sfxEnabled: true,
       lastUpdated: Date.now()
@@ -520,6 +529,43 @@ class SpeedCodingStore {
   // Switch competition round
   setRound(round) {
     this.state.currentRound = round; // 'QUALIFICATION' or 'FINAL'
+    if (round === 'QUALIFICATION' && this.state.participantsPool && this.state.participantsPool.length > 0) {
+      this.populateParticipants(this.state.participantsPool);
+    } else if (round === 'FINAL' && this.state.finalistsPool) {
+      this.loadFinalists(this.state.finalistsPool);
+    }
+    this.saveState(this.state, true);
+  }
+
+  // Load finalists from Rekapitulasi Final sheet
+  loadFinalists(finalistsList) {
+    const list = finalistsList || [];
+    this.state.currentRound = 'FINAL';
+    this.state.finalistsPool = list;
+
+    this.state.seats.forEach((seat, idx) => {
+      if (idx < list.length) {
+        const p = list[idx];
+        seat.participantId = p.id || `F${idx + 1}`;
+        seat.participantName = p.name;
+        seat.category = p.category || '';
+        seat.school = p.school || '';
+        seat.status = 'coding';
+        seat.finishSeconds = null;
+        seat.finishTimeElapsed = null;
+        seat.finishTimestamp = null;
+      } else {
+        seat.participantId = null;
+        seat.participantName = '';
+        seat.category = '';
+        seat.school = '';
+        seat.status = 'empty';
+        seat.finishSeconds = null;
+        seat.finishTimeElapsed = null;
+        seat.finishTimestamp = null;
+      }
+    });
+
     this.saveState(this.state, true);
   }
 

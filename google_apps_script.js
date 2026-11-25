@@ -1,160 +1,327 @@
 /**
- * GOOGLE APPS SCRIPT - SPEED CODING CONNECTOR
- * Salin dan tempel kode ini di Extensions -> Apps Script pada Google Spreadsheet Anda.
- * 
- * Fitur:
- * 1. Otomatis mengenali babak (postData.round: 'QUALIFICATION' atau 'FINAL')
- *    - Jika QUALIFICATION: mengisi kolom 'Kecepatan Penyelesaian' ke seluruh sheet Juri Kualifikasi (JURI 1, JURI 2, JURI 3)
- *      dan mengupdate sheet 'Rekap_Hasil_Kualifikasi'
- *    - Jika FINAL: mengisi kolom 'Kecepatan Penyelesaian' ke seluruh sheet Juri Final (JURI 1 FINAL, JURI 2 FINAL, JURI 3 FINAL)
- *      dan mengupdate sheet 'Rekap_Hasil_Final'
- * 2. Menyediakan API JSON daftar peserta (GET)
+ * ==============================================================================
+ * GOOGLE APPS SCRIPT: SPEED CODING AUTO-SYNC CONNECTOR
+ * ==============================================================================
+ * Petunjuk Pemasangan di Google Spreadsheet:
+ * 1. Buka Google Spreadsheet Anda.
+ * 2. Klik menu: Ekstensi (Extensions) -> Apps Script.
+ * 3. Hapus seluruh isi Code.gs, lalu tempel (paste) seluruh kode ini.
+ * 4. Klik ikon Save (Disket / Ctrl+S).
+ * 5. Klik tombol biru "Terapkan" (Deploy) -> "Kelola Penerapan" (Manage Deployments)
+ *    -> Klik ikon Pensil (Edit) -> Pilih Versi: "Versi baru" (New version) -> Klik "Terapkan" (Deploy).
+ *    (Atau jika baru pertama kali: "Penerapan baru" -> Aplikasi Web -> Akses: "Siapa saja / Anyone").
+ * ==============================================================================
  */
 
 function doGet(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheets = ss.getSheets();
-  var targetSheet = sheets[0];
-  
-  var data = targetSheet.getDataRange().getValues();
-  var headerRow = -1;
-  var nameCol = -1;
-  
-  for (var r = 0; r < data.length; r++) {
-    for (var c = 0; c < data[r].length; c++) {
-      var val = String(data[r][c]).toLowerCase();
-      if (val.indexOf("nama peserta") !== -1 || (val.indexOf("nama") !== -1 && data[r].length > 2)) {
-        headerRow = r;
-        nameCol = c;
-        break;
-      }
-    }
-    if (headerRow !== -1) break;
-  }
-  
-  var rows = [];
-  if (headerRow !== -1 && nameCol !== -1) {
-    for (var i = headerRow + 1; i < data.length; i++) {
-      var name = String(data[i][nameCol]).trim();
-      if (name && name.toLowerCase() !== "nama peserta") {
-        rows.push({
-          no: data[i][nameCol - 1] || (rows.length + 1),
-          name: name
-        });
-      }
-    }
-  }
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheets = ss.getSheets();
+    var reqSheet = (e && e.parameter && e.parameter.sheet) ? String(e.parameter.sheet).trim().toLowerCase() : '';
+    
+    var targetSheet = null;
 
-  return ContentService.createTextOutput(JSON.stringify({
-    status: "success",
-    count: rows.length,
-    participants: rows
-  })).setMimeType(ContentService.MimeType.JSON);
+    if (reqSheet === 'final' || reqSheet.indexOf('final') !== -1) {
+      // 1. Cari sheet Rekapitulasi Final
+      for (var s = 0; s < sheets.length; s++) {
+        var sName = sheets[s].getName().toUpperCase();
+        if (sName.indexOf("REKAPITULASI FINAL") !== -1 || sName.indexOf("REKAP FINAL") !== -1) {
+          targetSheet = sheets[s];
+          break;
+        }
+      }
+      // 2. Fallback: sheet apapun yang mengandung 'FINAL' selain sheet Juri
+      if (!targetSheet) {
+        for (var s = 0; s < sheets.length; s++) {
+          var sName = sheets[s].getName().toUpperCase();
+          if (sName.indexOf("FINAL") !== -1 && sName.indexOf("JURI") === -1) {
+            targetSheet = sheets[s];
+            break;
+          }
+        }
+      }
+      if (!targetSheet) {
+        return ContentService.createTextOutput(JSON.stringify({
+          status: "success",
+          count: 0,
+          sheet: "Rekapitulasi Final (Belum Ditemukan)",
+          participants: [],
+          message: "Sheet Rekapitulasi Final belum ditemukan di spreadsheet."
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    } else {
+      // Default: cari sheet PESERTA
+      for (var s = 0; s < sheets.length; s++) {
+        if (sheets[s].getName().toUpperCase().indexOf("PESERTA") !== -1) {
+          targetSheet = sheets[s];
+          break;
+        }
+      }
+      if (!targetSheet) targetSheet = sheets[0];
+    }
+
+    var data = targetSheet.getDataRange().getValues();
+    var headerRow = -1;
+    var nameCol = -1;
+    var catCol = -1;
+    var schoolCol = -1;
+
+    for (var r = 0; r < Math.min(20, data.length); r++) {
+      for (var c = 0; c < data[r].length; c++) {
+        var val = String(data[r][c]).toLowerCase().trim();
+        if (val.indexOf("nama") !== -1 && nameCol === -1) {
+          nameCol = c;
+          headerRow = r;
+        }
+        if (val.indexOf("kategori") !== -1 || val.indexOf("jenjang") !== -1) {
+          catCol = c;
+        }
+        if (val.indexOf("sekolah") !== -1 || val.indexOf("instansi") !== -1) {
+          schoolCol = c;
+        }
+      }
+      if (headerRow !== -1 && nameCol !== -1) break;
+    }
+
+    var list = [];
+    if (headerRow !== -1 && nameCol !== -1) {
+      for (var i = headerRow + 1; i < data.length; i++) {
+        var name = String(data[i][nameCol]).trim();
+        if (name && name.toLowerCase() !== "nama peserta" && name.toLowerCase() !== "nama" && name.replace(/[^a-zA-Z]/g, '').length >= 3) {
+          var rawSchool = schoolCol !== -1 ? String(data[i][schoolCol]).trim() : "";
+          var rawCat = catCol !== -1 ? String(data[i][catCol]).trim() : "";
+          if (!rawCat && rawSchool) {
+            rawCat = rawSchool.toUpperCase().indexOf("SMP") !== -1 ? "SMP" : (rawSchool.toUpperCase().indexOf("SD") !== -1 ? "SD" : "SD");
+          }
+          list.push({
+            no: (list.length + 1),
+            name: name,
+            category: rawCat || "SD",
+            school: rawSchool
+          });
+        }
+      }
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "success",
+      count: list.length,
+      sheet: targetSheet.getName(),
+      participants: list
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      message: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 function doPost(e) {
   try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "error",
+        message: "No POST body received"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     var postData = JSON.parse(e.postData.contents);
     var round = (postData.round || 'QUALIFICATION').toUpperCase();
+    var isFinal = (round === 'FINAL');
     var results = postData.results || [];
+
+    if (results.length === 0) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        message: "No results to record"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheets = ss.getSheets();
-    
-    // Map of name -> elapsed finish time
-    var timeMap = {};
+
+    // Map of normalized name -> finish data or clear action
+    var resultMap = {};
     results.forEach(function(r) {
-      if (r.name && r.elapsed) {
-        timeMap[r.name.trim().toLowerCase()] = r.elapsed;
+      if (r.name) {
+        var isClear = (r.action === 'clear' || postData.action === 'clear' || !r.elapsed);
+        resultMap[normalizeName(r.name)] = {
+          rawName: r.name,
+          elapsed: isClear ? '' : r.elapsed,
+          isClear: isClear,
+          rank: r.rank || "-",
+          category: r.category || "",
+          school: r.school || "",
+          timestamp: isClear ? '' : (r.timestamp || new Date().toLocaleTimeString('id-ID'))
+        };
       }
     });
 
-    var updatedSheets = [];
-    var isFinal = (round === 'FINAL');
+    var updatedSheetReports = [];
 
-    // Filter sheets according to round
+    // Filter sheet target sesuai babak
     sheets.forEach(function(sheet) {
       var sName = sheet.getName().toUpperCase();
-      
-      // If round is FINAL, target sheets with "FINAL" in title.
-      // If round is QUALIFICATION, target juri sheets WITHOUT "FINAL" in title.
-      var isTargetSheet = false;
+
+      // Lewati sheet master peserta dan rekap
+      if (sName.indexOf("REKAP") !== -1 || sName === "PESERTA" || sName.indexOf("PETUNJUK") !== -1) {
+        return;
+      }
+
+      var isTarget = false;
       if (isFinal) {
-        if (sName.indexOf("FINAL") !== -1 && sName.indexOf("REKAP") === -1) {
-          isTargetSheet = true;
+        // Mode Final: target sheet yang mengandung kata "FINAL" (misal: "Juri 1 Final", "Juri 2 Final", "Juri 3 Final")
+        if (sName.indexOf("FINAL") !== -1) {
+          isTarget = true;
         }
       } else {
-        if (sName.indexOf("FINAL") === -1 && sName.indexOf("REKAP") === -1 && 
-            (sName.indexOf("JURI") !== -1 || sName.indexOf("KUALIFIKASI") !== -1 || sName.indexOf("PENYISIHAN") !== -1 || sName === "SHEET1")) {
-          isTargetSheet = true;
+        // Mode Penyisihan / Kualifikasi: target sheet yang TIDAK mengandung kata "FINAL", dan mengandung "JURI", "PENYISIHAN", atau "KUALIFIKASI"
+        if (sName.indexOf("FINAL") === -1 && 
+           (sName.indexOf("JURI") !== -1 || sName.indexOf("PENYISIHAN") !== -1 || sName.indexOf("KUALIFIKASI") !== -1 || sName === "SHEET1")) {
+          isTarget = true;
         }
       }
 
-      if (!isTargetSheet) return;
+      if (!isTarget) return;
 
       var data = sheet.getDataRange().getValues();
       var headerRow = -1;
       var nameCol = -1;
       var timeCol = -1;
 
-      // Locate column indices in this sheet
+      // 1. Cari letak kolom Nama dan Waktu Selesai
       for (var r = 0; r < Math.min(15, data.length); r++) {
         for (var c = 0; c < data[r].length; c++) {
-          var val = String(data[r][c]).toLowerCase();
+          var val = String(data[r][c]).trim().toLowerCase();
+
+          // Deteksi kolom nama
           if (val.indexOf("nama peserta") !== -1 || (val.indexOf("nama") !== -1 && nameCol === -1)) {
             nameCol = c;
             headerRow = r;
           }
-          if (val.indexOf("kecepatan") !== -1 || val.indexOf("waktu") !== -1) {
+
+          // Deteksi kolom waktu selesai (prioritaskan 'waktu selesai' atau 'selesai')
+          if (val.indexOf("waktu selesai") !== -1 || val.indexOf("selesai") !== -1) {
+            timeCol = c;
+          } else if (timeCol === -1 && (val.indexOf("kecepatan") !== -1 || val.indexOf("waktu") !== -1)) {
             timeCol = c;
           }
         }
-        if (nameCol !== -1 && timeCol !== -1) break;
+        if (headerRow !== -1 && nameCol !== -1 && timeCol !== -1) break;
       }
 
-      // If both Nama Peserta and Kecepatan columns exist in this sheet, fill them!
+      // Jika kolom ditemukan, lakukan pengisian nilai
       if (headerRow !== -1 && nameCol !== -1 && timeCol !== -1) {
-        var sheetUpdated = false;
-        for (var i = headerRow + 1; i < data.length; i++) {
-          var pName = String(data[i][nameCol]).trim().toLowerCase();
-          if (pName && timeMap[pName]) {
-            // Write to cell (1-based row & column)
-            sheet.getRange(i + 1, timeCol + 1).setValue(timeMap[pName]);
-            sheetUpdated = true;
+        var matchCount = 0;
+
+        for (var rowIdx = headerRow + 1; rowIdx < data.length; rowIdx++) {
+          var rowName = String(data[rowIdx][nameCol]).trim();
+          if (!rowName) continue;
+
+          var normRowName = normalizeName(rowName);
+
+          // Cek kecocokan nama
+          for (var key in resultMap) {
+            var item = resultMap[key];
+            if (isNameMatch(normRowName, key)) {
+              var targetCell = sheet.getRange(rowIdx + 1, timeCol + 1);
+              if (item.isClear) {
+                targetCell.clearContent();
+              } else {
+                targetCell.setNumberFormat("@"); // Format teks agar waktu 00:52 tidak berubah
+                targetCell.setValue(item.elapsed);
+              }
+              matchCount++;
+              break;
+            }
           }
         }
-        if (sheetUpdated) {
-          updatedSheets.push(sheet.getName());
+
+        if (matchCount > 0) {
+          updatedSheetReports.push(sheet.getName() + " (" + matchCount + " peserta)");
         }
       }
     });
 
-    // Create or update dedicated Rekap sheet (Rekap_Hasil_Final / Rekap_Hasil_Kualifikasi)
+    // 2. Update Sheet Rekap Terpusat (Rekap_Hasil_Kualifikasi / Rekap_Hasil_Final)
     var rekapSheetName = isFinal ? "Rekap_Hasil_Final" : "Rekap_Hasil_Kualifikasi";
-    var rekapSheet = ss.getSheetByName(rekapSheetName) || ss.insertSheet(rekapSheetName);
-    rekapSheet.clear();
-    
-    var headerTitle = isFinal ? "HASIL GRAND FINAL SPEED CODING 2026" : "HASIL KUALIFIKASI SPEED CODING 2026";
-    rekapSheet.appendRow([headerTitle]);
-    rekapSheet.appendRow(["Rank", "No Meja", "Nama Peserta", "Kategori", "Asal Sekolah", "Waktu Selesai (Elapsed)", "Waktu Jam Selesai"]);
-    
-    rekapSheet.getRange(2, 1, 1, 7)
-      .setFontWeight("bold")
-      .setBackground(isFinal ? "#10B981" : "#FFAB19")
-      .setFontColor("#FFFFFF");
+    var rekapSheet = ss.getSheetByName(rekapSheetName);
 
-    results.forEach(function(r) {
-      rekapSheet.appendRow([r.rank || "-", r.seat || "-", r.name, r.category || "-", r.school || "-", r.elapsed || "-", r.timestamp || "-"]);
-    });
+    if (results.length > 1) {
+      // Jika sync seluruh peserta (Batch)
+      if (!rekapSheet) rekapSheet = ss.insertSheet(rekapSheetName);
+      rekapSheet.clear();
+
+      var headerTitle = isFinal ? "HASIL GRAND FINAL SPEED CODING 2026" : "HASIL KUALIFIKASI SPEED CODING 2026";
+      rekapSheet.appendRow([headerTitle]);
+      rekapSheet.appendRow(["Rank", "Nama Peserta", "Kategori", "Asal Sekolah", "Waktu Selesai (Elapsed)", "Waktu Jam Selesai"]);
+
+      rekapSheet.getRange(2, 1, 1, 6)
+        .setFontWeight("bold")
+        .setBackground(isFinal ? "#10B981" : "#FFAB19")
+        .setFontColor("#FFFFFF");
+
+      results.forEach(function(r) {
+        rekapSheet.appendRow([r.rank || "-", r.name, r.category || "-", r.school || "-", r.elapsed || "-", r.timestamp || "-"]);
+      });
+    } else if (results.length === 1 && rekapSheet) {
+      // Jika sync 1 peserta (Live finish atau batal/clear), cari barisnya di rekap tanpa me-reset
+      var rData = rekapSheet.getDataRange().getValues();
+      var single = results[0];
+      var isClearSingle = (single.action === 'clear' || postData.action === 'clear' || !single.elapsed);
+      var foundRow = -1;
+      for (var rk = 2; rk < rData.length; rk++) {
+        if (isNameMatch(normalizeName(rData[rk][1]), normalizeName(single.name))) {
+          foundRow = rk + 1;
+          break;
+        }
+      }
+      if (foundRow !== -1) {
+        if (isClearSingle) {
+          rekapSheet.getRange(foundRow, 5).clearContent();
+          rekapSheet.getRange(foundRow, 6).clearContent();
+        } else {
+          rekapSheet.getRange(foundRow, 5).setValue(single.elapsed);
+          rekapSheet.getRange(foundRow, 6).setValue(single.timestamp || new Date().toLocaleTimeString('id-ID'));
+        }
+      }
+    }
 
     return ContentService.createTextOutput(JSON.stringify({
       status: "success",
       round: round,
-      message: "Berhasil mengisi kolom Kecepatan ke: " + (updatedSheets.length > 0 ? updatedSheets.join(", ") : "Tidak ada sheet juri yang cocok") + " & master " + rekapSheetName,
-      updatedSheets: updatedSheets
+      updatedSheets: updatedSheetReports,
+      message: updatedSheetReports.length > 0 ? 
+        "Waktu selesai berhasil dikirim ke: " + updatedSheetReports.join(", ") : 
+        "Data diterima, namun tidak ada kolom 'Waktu Selesai' yang cocok di sheet juri."
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "error",
+      message: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+/**
+ * Normalisasi nama: lowercase & hanya ambil karakter alfanumerik
+ */
+function normalizeName(str) {
+  if (!str) return "";
+  return String(str).toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+/**
+ * Pencocokan nama fleksibel (menangani spasi ganda, singkatan, atau nama panggilan)
+ */
+function isNameMatch(normA, normB) {
+  if (!normA || !normB) return false;
+  if (normA === normB) return true;
+  if (normA.length >= 4 && normB.length >= 4) {
+    if (normA.indexOf(normB) !== -1 || normB.indexOf(normA) !== -1) return true;
+  }
+  return false;
 }

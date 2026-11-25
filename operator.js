@@ -54,6 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${parts[0]} ${parts[1].charAt(0)}.`;
   }
 
+  function getNameInitials(fullName) {
+    if (!fullName) return '';
+    const clean = fullName.trim().replace(/[^a-zA-Z]/g, '');
+    if (clean.length === 0) return '';
+    return clean.slice(0, 2).toUpperCase();
+  }
+
   // --- RENDER SEAT PINS ON FLOORPLAN ---
   function renderSeatPins(state) {
     const existingPins = floorplanContainer.querySelectorAll('.seat-pin');
@@ -68,8 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pin.style.top = `${seat.y}%`;
       pin.setAttribute('data-id', seat.id);
 
-      const seatNum = seat.id.replace('S', '');
-      pin.textContent = seatNum;
+      pin.textContent = getNameInitials(seat.participantName);
 
       // Permanent compact name badge without hovering
       if (seat.participantName && seat.participantName.trim().length > 0) {
@@ -125,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res) {
               const nameA = res.seatA.participantName ? getShortName(res.seatA.participantName) : 'Kosong';
               const nameB = res.seatB.participantName ? getShortName(res.seatB.participantName) : 'Kosong';
-              showToast(`🔄 Meja ${res.seatA.id.replace('S','')} (${nameA}) ⇄ Meja ${res.seatB.id.replace('S','')} (${nameB}) berhasil ditukar!`);
+              showToast(`🔄 ${nameA} ⇄ ${nameB} berhasil ditukar!`);
               highlightSwappedPins([res.seatA.id, res.seatB.id]);
             }
           }, 40);
@@ -156,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if (res) {
                 const nameA = res.seatA.participantName ? getShortName(res.seatA.participantName) : 'Kosong';
                 const nameB = res.seatB.participantName ? getShortName(res.seatB.participantName) : 'Kosong';
-                showToast(`🔄 Meja ${res.seatA.id.replace('S','')} (${nameA}) ⇄ Meja ${res.seatB.id.replace('S','')} (${nameB}) berhasil ditukar!`);
+                showToast(`🔄 ${nameA} ⇄ ${nameB} berhasil ditukar!`);
                 highlightSwappedPins([res.seatA.id, res.seatB.id]);
               }
             }, 40);
@@ -189,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const updated = window.store.recordSeatFinish(seat.id);
         const finishTime = updated ? updated.finishTimeElapsed : '';
-        showToast(`🏁 ${seat.label || seat.id} (${seat.participantName}) SELESAI pada ${finishTime}!`);
+        showToast(`🏁 ${seat.participantName} SELESAI pada ${finishTime}!`);
         autoPushSeatToSpreadsheet(updated);
       } else {
         openSeatModal(seat.id);
@@ -206,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const seat = state.seats.find(s => s.id === seatId);
     if (!seat) return;
 
-    modalSeatTitle.textContent = `${seat.label || seat.id} - ${seat.participantName || 'Belum Ada Peserta'}`;
+    modalSeatTitle.textContent = seat.participantName ? `Posisi: ${seat.participantName}` : 'Pilih Peserta Untuk Posisi Ini';
 
     const pool = state.participantsPool || [];
     const assignedIds = new Set(state.seats.filter(s => s.id !== seatId && s.participantId).map(s => s.participantId));
@@ -217,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isSelected = p.id === seat.participantId;
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = `${p.name} (${p.category} - ${p.school}) ${isTaken ? '⚠️ [Meja Lain]' : ''}`;
+      opt.textContent = `${p.name} (${p.category} - ${p.school}) ${isTaken ? '⚠️ [Posisi Lain]' : ''}`;
       if (isSelected) opt.selected = true;
       selectParticipant.appendChild(opt);
     });
@@ -278,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!seat || !seat.participantName) {
       await window.scratchDialog.alert({
         title: 'Pilih Peserta Dulu!',
-        message: 'Silakan pilih nama peserta dari dropdown terlebih dahulu untuk meja ini sebelum mencatat waktu selesai.',
+        message: 'Silakan pilih nama peserta dari dropdown terlebih dahulu untuk posisi ini sebelum mencatat waktu selesai.',
         type: 'warning',
         icon: '🐱'
       });
@@ -290,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const updated = window.store.recordSeatFinish(activeSeatId);
     updateModalStatusView(updated, window.store.state.timer.elapsedSeconds);
-    showToast(`🏁 ${updated.label} (${updated.participantName}) tercatat SELESAI: ${updated.finishTimeElapsed}!`);
+    showToast(`🏁 ${updated.participantName} tercatat SELESAI: ${updated.finishTimeElapsed}!`);
     autoPushSeatToSpreadsheet(updated);
   });
 
@@ -322,18 +328,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Reset Finish status back to coding
   btnResetFinish.addEventListener('click', () => {
     if (!activeSeatId) return;
+    const seatBefore = window.store.state.seats.find(s => s.id === activeSeatId);
     window.store.resetSeatFinish(activeSeatId);
     const updated = window.store.state.seats.find(s => s.id === activeSeatId);
     updateModalStatusView(updated, window.store.state.timer.elapsedSeconds);
     showToast('Status peserta dikembalikan ke Sedang Coding.');
+    if (seatBefore && seatBefore.participantName) {
+      autoPushSeatToSpreadsheet(seatBefore, 'clear');
+    }
   });
 
   // Unassign Participant from Seat
   btnUnassignSeat.addEventListener('click', async () => {
     if (!activeSeatId) return;
     const confirmed = await window.scratchDialog.confirm({
-      title: 'Kosongkan Meja Ini?',
-      message: 'Peserta akan dihapus dari penugasan meja ini. Apakah Anda yakin?',
+      title: 'Kosongkan Posisi Ini?',
+      message: 'Peserta akan dihapus dari penugasan posisi ini. Apakah Anda yakin?',
       confirmText: 'Ya, Kosongkan',
       cancelText: 'Batal',
       type: 'warning',
@@ -341,9 +351,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (confirmed) {
+      const seatBefore = window.store.state.seats.find(s => s.id === activeSeatId);
       window.store.assignParticipantToSeat(activeSeatId, null);
       seatModal.classList.remove('open');
-      showToast('Meja telah dikosongkan.');
+      showToast('Posisi peserta telah dikosongkan.');
+      if (seatBefore && seatBefore.participantName) {
+        autoPushSeatToSpreadsheet(seatBefore, 'clear');
+      }
     }
   });
 
@@ -366,20 +380,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Auto-sync single finished seat to Google Apps Script
-  async function autoPushSeatToSpreadsheet(seat) {
+  async function autoPushSeatToSpreadsheet(seat, action = 'record') {
     const url = (window.store.state.settings && window.store.state.settings.appsScriptUrl) || (window.store.state.appsScriptUrl) || '';
     if (!url || !seat || !seat.participantName) return;
 
     const payload = {
       round: window.store.state.currentRound || 'QUALIFICATION',
+      action: action,
       results: [{
         rank: seat.rank || 1,
         seat: seat.label || seat.id,
         name: seat.participantName,
         category: seat.category || '',
         school: seat.school || '',
-        elapsed: seat.finishTimeElapsed || '',
-        timestamp: seat.finishTimestamp || new Date().toLocaleTimeString('id-ID')
+        elapsed: action === 'clear' ? '' : (seat.finishTimeElapsed || ''),
+        action: action,
+        timestamp: action === 'clear' ? '' : (seat.finishTimestamp || new Date().toLocaleTimeString('id-ID'))
       }]
     };
 
@@ -390,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload)
       });
-      console.log('Auto-synced to Apps Script:', seat.participantName);
+      console.log(`Auto-synced [${action}] to Apps Script:`, seat.participantName);
     } catch (err) {
       console.warn('Apps Script auto-sync error:', err);
     }

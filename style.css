@@ -29,28 +29,54 @@
   -webkit-font-smoothing: antialiased;
 }
 
+html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 body {
   background-color: var(--bg-dark);
   color: var(--text-primary);
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Global scrollbar hiding for crisp zero-scroll fullscreen presentation */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* NAVIGATION HEADER */
 .app-header {
+  flex-shrink: 0;
   background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
   border-bottom: 3px solid var(--scratch-orange);
-  padding: 10px 24px;
+  padding: 6px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   z-index: 50;
   position: relative;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 12px;
+  box-sizing: border-box;
 }
 
 /* VIEW MODE SELECTOR (DUAL VIEW, TV, FLOORPLAN) */
@@ -89,52 +115,86 @@ body {
   box-shadow: 0 2px 10px rgba(76, 151, 255, 0.4);
 }
 
+/* VIEW MODE CONTENT WRAPPERS */
+.view-mode-content {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: none;
+}
+
+.view-mode-content.active,
+#viewDual:not([style*="display: none"]) {
+  display: flex;
+  flex-direction: column;
+}
+
 /* DUAL VIEW CONTAINER (ALL-IN-ONE SPLIT SCREEN) */
 .dual-view-container {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 16px;
-  padding: 12px 18px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 12px;
+  padding: 6px 16px 8px 16px;
+  height: 100%;
+  max-height: 100%;
   flex: 1;
-  max-width: 1920px;
-  margin: 0 auto;
+  min-height: 0;
+  overflow: hidden;
+  max-width: 100%;
+  margin: 0;
   width: 100%;
   box-sizing: border-box;
-}
-
-@media (max-width: 1100px) {
-  .dual-view-container {
-    grid-template-columns: 1fr;
-  }
 }
 
 .dual-left-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  min-height: 0;
+  gap: 6px;
+}
+
+.dual-left-col .floorplan-wrapper {
+  flex: 1;
+  min-height: 0;
+  max-height: calc(100% - 74px);
+  aspect-ratio: 1157 / 992;
+  width: auto;
+  margin: 0 auto;
 }
 
 .dual-right-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  min-height: 0;
+  gap: 8px;
 }
 
 .dual-view-container .timer-hero-box {
-  padding: 10px 18px !important;
-  border-radius: 16px;
+  padding: 8px 16px !important;
+  border-radius: 14px;
+  flex-shrink: 0;
+  margin-bottom: 2px;
 }
 
 .dual-view-container .timer-digits {
-  font-size: 3.4rem !important;
+  font-size: clamp(2.3rem, 3.8vh, 3.3rem) !important;
+  line-height: 1.05;
 }
 
 .dual-view-container .scoreboard-section {
-  padding: 12px 16px;
-  border-radius: 16px;
-  min-height: auto;
+  padding: 8px 14px;
+  border-radius: 14px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .brand-wrapper {
@@ -247,18 +307,17 @@ body {
   display: grid;
   grid-template-columns: 280px 1fr;
   grid-template-rows: auto 1fr;
-  gap: 20px;
-  padding: 20px 24px;
+  gap: 14px;
+  padding: 8px 18px;
+  height: 100%;
+  max-height: 100%;
   flex: 1;
-  max-width: 1920px;
-  margin: 0 auto;
+  min-height: 0;
+  overflow: hidden;
+  max-width: 100%;
+  margin: 0;
   width: 100%;
-}
-
-@media (max-width: 1024px) {
-  .tv-container {
-    grid-template-columns: 1fr;
-  }
+  box-sizing: border-box;
 }
 
 /* LEFT SIDEBAR: LOGOS & EVENT INFO */
@@ -679,30 +738,33 @@ body {
 .leaderboard-grid.compact-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 5px 8px;
-  max-height: none;
-  overflow: visible;
+  grid-template-rows: repeat(15, minmax(0, 1fr));
+  gap: 3px 8px;
+  overflow: hidden;
   padding-right: 0;
   flex: 1;
-  align-content: start;
+  min-height: 0;
 }
 
 @media (max-width: 900px) {
   .leaderboard-grid.compact-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    overflow-y: auto;
   }
 }
 
 .rank-row.compact-row {
   background: #182234;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 4px 8px;
+  border-radius: 6px;
+  padding: 1px 6px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   transition: background 0.15s ease, border-color 0.15s ease;
-  min-height: 32px;
+  min-height: 0;
+  height: 100%;
   min-width: 0;
   overflow: hidden;
 }
@@ -713,12 +775,6 @@ body {
   transform: none;
 }
 
-/* Qualifier highlight for 1-10 during qualification */
-.rank-row.compact-row.qualifier-top10 {
-  border-left: 4px solid var(--scratch-orange);
-  background: linear-gradient(90deg, rgba(255, 171, 25, 0.08) 0%, #182234 100%);
-}
-
 .rank-row.compact-row.is-finished {
   background: linear-gradient(90deg, rgba(16, 185, 129, 0.14) 0%, #182234 100%);
   border-color: rgba(16, 185, 129, 0.45);
@@ -726,16 +782,20 @@ body {
 
 .compact-rank-num {
   font-family: 'Orbitron', monospace;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
   color: #94a3b8;
-  width: 24px;
-  text-align: center;
+  min-width: 36px;
+  width: auto;
+  text-align: left;
+  padding-left: 2px;
+  margin-right: 6px;
   flex-shrink: 0;
 }
 
 .compact-row.is-finished .compact-rank-num {
-  color: var(--scratch-green);
+  color: #a7f3d0;
+  text-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
 }
 
 .compact-seat-badge {
@@ -804,15 +864,17 @@ body {
 
 .compact-time-badge {
   font-family: 'Orbitron', monospace;
-  font-size: 0.78rem;
-  font-weight: 800;
-  color: var(--scratch-green);
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(16, 185, 129, 0.5);
-  padding: 2px 6px;
-  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  background: rgba(16, 185, 129, 0.35);
+  border: 1.5px solid #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+  padding: 2px 7px;
+  border-radius: 6px;
   flex-shrink: 0;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .compact-coding-badge {
@@ -843,22 +905,6 @@ body {
 .rank-row:hover {
   transform: translateX(4px);
   border-color: var(--scratch-blue);
-}
-
-.rank-row.rank-1 {
-  background: linear-gradient(90deg, rgba(255, 171, 25, 0.15) 0%, #182234 80%);
-  border: 1.5px solid var(--scratch-orange);
-  box-shadow: 0 4px 18px rgba(255, 171, 25, 0.15);
-}
-
-.rank-row.rank-2 {
-  background: linear-gradient(90deg, rgba(148, 163, 184, 0.15) 0%, #182234 80%);
-  border: 1.5px solid #94a3b8;
-}
-
-.rank-row.rank-3 {
-  background: linear-gradient(90deg, rgba(205, 127, 50, 0.15) 0%, #182234 80%);
-  border: 1.5px solid #cd7f32;
 }
 
 .rank-badge {
@@ -937,14 +983,17 @@ body {
 
 .finish-time-badge {
   font-family: 'Orbitron', monospace;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--scratch-green);
-  background: rgba(15, 189, 140, 0.15);
-  border: 1px solid var(--scratch-green);
-  padding: 6px 12px;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #ffffff;
+  background: rgba(16, 185, 129, 0.35);
+  border: 1.5px solid #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+  padding: 6px 14px;
   border-radius: 10px;
   text-align: center;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .status-badge-coding {
@@ -977,26 +1026,35 @@ body {
 
 /* OPERATOR FLOORPLAN VIEW (Photo 2 Concept) */
 .operator-main {
-  padding: 20px 24px;
+  padding: 8px 16px;
   flex: 1;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  max-width: 1400px;
-  margin: 0 auto;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  margin: 0;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .operator-toolbar {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 14px 20px;
+  padding: 10px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 1100px;
+  flex-shrink: 0;
 }
 
 .op-timer-display {
@@ -1049,22 +1107,71 @@ body {
 /* INTERACTIVE FLOORPLAN CANVAS */
 .floorplan-wrapper {
   position: relative;
-  width: 100%;
+  aspect-ratio: 1157 / 992;
+  width: auto;
   max-width: 100%;
+  height: 100%;
+  max-height: calc(100vh - 145px);
   margin: 0 auto;
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   overflow: hidden;
   border: 2px solid var(--border-color);
-  aspect-ratio: 1024 / 855;
-  max-height: calc(100vh - 165px);
+}
+
+.operator-main .floorplan-wrapper,
+#floorplanContainerSolo {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  max-height: calc(100vh - 140px);
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: 1157 / 992;
+  margin: 0 auto;
+}
+
+/* TOP-LEFT OPERATOR BADGE ON FLOORPLAN */
+.floorplan-operator-badge {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1.5px solid var(--scratch-blue);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  padding: 4px 12px 4px 6px;
+  border-radius: 20px;
+  z-index: 25;
+  pointer-events: none;
+}
+
+.operator-badge-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--scratch-blue);
+  box-shadow: 0 0 10px rgba(76, 151, 255, 0.9);
+  border: 2px solid #ffffff;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.operator-badge-text {
+  font-family: 'Fredoka', 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.4px;
 }
 
 .floorplan-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: fill;
   display: block;
   user-select: none;
   pointer-events: none;
@@ -1081,8 +1188,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.62rem;
+  font-family: 'Fredoka', 'Poppins', sans-serif;
+  font-size: 0.68rem;
   font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.2px;
+  line-height: 1;
   color: #fff;
   transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 10;
@@ -1276,15 +1387,18 @@ body {
 
 .seat-time-label {
   font-family: 'Orbitron', monospace;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 900;
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.25);
-  border: 1px solid rgba(16, 185, 129, 0.5);
-  padding: 1px 5px;
+  color: #ffffff;
+  background: rgba(16, 185, 129, 0.45);
+  border: 1.5px solid #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+  padding: 1px 6px;
   border-radius: 4px;
   flex-shrink: 0; /* Time MM:SS will NEVER be clipped */
   letter-spacing: 0.5px;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
 }
 
 .seat-pin.finished .seat-pin-name-badge {
@@ -1305,8 +1419,9 @@ body {
 }
 
 .dual-view-container .seat-time-label {
-  font-size: 0.62rem;
-  padding: 1px 4px;
+  font-size: 0.64rem;
+  padding: 1px 5px;
+  color: #ffffff;
 }
 
 /* MODAL DIALOGS */
@@ -1681,15 +1796,87 @@ body {
   }
 }
 
-/* FULLSCREEN OVERRIDE FOR PROJECTOR / TV */
+/* FULLSCREEN & BIG SCREEN OVERRIDES (100% NO SCROLL, FITS 24" TO 100"+ TVS) */
+:fullscreen,
+:-webkit-full-screen,
 body.fullscreen-tv {
-  overflow: hidden;
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
 }
 
 body.fullscreen-tv .app-header {
-  padding: 6px 20px;
+  padding: 4px 18px;
+  min-height: 46px;
 }
 
-body.fullscreen-tv .timer-digits {
-  font-size: 6.5rem;
+/* TV MODE Timer digits in fullscreen */
+body.fullscreen-tv .tv-container .timer-digits {
+  font-size: clamp(3.8rem, 6.5vh, 5.5rem) !important;
+}
+
+/* DUAL VIEW Timer digits in fullscreen - calibrated so it never overflows */
+body.fullscreen-tv .dual-view-container .timer-digits {
+  font-size: clamp(2.3rem, 3.8vh, 3.3rem) !important;
+}
+
+/* 75-100+ INCH BIG SCREEN SCALING (4K & ULTRA-LARGE STAGE TVS) */
+@media (min-width: 2500px) or (min-height: 1350px) {
+  .app-header {
+    padding: 10px 32px;
+  }
+  .title-group h1 {
+    font-size: 2.2rem;
+  }
+  .app-main-logo {
+    height: 65px;
+    max-width: 120px;
+  }
+  .view-mode-btn {
+    font-size: 1.1rem;
+    padding: 8px 20px;
+  }
+  .nav-btn {
+    font-size: 1.05rem;
+    padding: 8px 18px;
+  }
+  .seat-pin {
+    width: 42px;
+    height: 42px;
+    font-size: 0.95rem;
+  }
+  .seat-pin-name-badge {
+    padding: 3px 10px;
+  }
+  .seat-name-label {
+    font-size: 0.95rem;
+    max-width: 130px;
+  }
+  .seat-time-label {
+    font-size: 0.95rem;
+  }
+  .dual-view-container .timer-digits {
+    font-size: 4.5rem !important;
+  }
+  .tv-container .timer-digits {
+    font-size: 7.5rem !important;
+  }
+  .rank-row.compact-row {
+    font-size: 1.15rem;
+    padding: 4px 12px;
+  }
+  .compact-seat-badge {
+    font-size: 1.05rem;
+    padding: 3px 10px;
+  }
+  .category-pill {
+    font-size: 0.95rem;
+    padding: 2px 8px;
+  }
+  .compact-rank-num {
+    font-size: 1.15rem;
+    min-width: 52px;
+    width: auto;
+    margin-right: 8px;
+  }
 }
