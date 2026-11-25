@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isSelected = p.id === seat.participantId;
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = `${p.name} (${p.category} - ${p.school}) ${isTaken ? '⚠️ [Posisi Lain]' : ''}`;
+      opt.textContent = `${p.name} (${p.category} - ${p.school}) ${isTaken ? '⚠️ [Pindah dari Meja Lain]' : ''}`;
       if (isSelected) opt.selected = true;
       selectParticipant.appendChild(opt);
     });
@@ -267,7 +267,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (p) {
       inputSeatCategory.value = p.category;
       inputSeatSchool.value = p.school;
-      window.store.assignParticipantToSeat(activeSeatId, p);
+      const res = window.store.assignParticipantToSeat(activeSeatId, p);
+      if (res && res.oldSeat) {
+        showToast(`🪑 ${p.name} dipindahkan ke posisi ini (posisi lama otomatis dikosongkan).`);
+        if (typeof highlightSwappedPins === 'function') {
+          highlightSwappedPins([activeSeatId, res.oldSeat.id]);
+        }
+      }
     } else {
       inputSeatCategory.value = '';
       inputSeatSchool.value = '';
@@ -558,6 +564,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   autoSyncSpreadsheetOperator();
+
+  // --- CLOUD SEATS SYNC & SHARE LINK BUTTONS ---
+  const btnSyncSeatsCloudOp = document.getElementById('btnSyncSeatsCloudOp');
+  const btnCopyShareSeatsLinkOp = document.getElementById('btnCopyShareSeatsLinkOp');
+
+  if (btnSyncSeatsCloudOp) {
+    btnSyncSeatsCloudOp.addEventListener('click', async () => {
+      btnSyncSeatsCloudOp.disabled = true;
+      btnSyncSeatsCloudOp.textContent = '⏳ Sinkron...';
+      const updated = await window.store.pullSeatsFromCloud(true);
+      btnSyncSeatsCloudOp.disabled = false;
+      btnSyncSeatsCloudOp.textContent = '☁️ Sinkron Meja Cloud';
+      if (updated) {
+        showToast('✅ Posisi denah meja berhasil disinkronkan dari Cloud!');
+      } else {
+        showToast('ℹ️ Posisi denah sudah sesuai dengan versi Cloud terbaru.');
+      }
+    });
+  }
+
+  if (btnCopyShareSeatsLinkOp) {
+    btnCopyShareSeatsLinkOp.addEventListener('click', async () => {
+      const shareUrl = window.store.generateShareableSeatsUrl();
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showToast('📋 Link posisi denah disalin! Buka link ini di TV panggung atau laptop lain.');
+      } catch (e) {
+        prompt('Salin link posisi denah ini:', shareUrl);
+      }
+    });
+  }
 
   window.store.subscribe((state, source) => {
     if (source === 'ticker') {

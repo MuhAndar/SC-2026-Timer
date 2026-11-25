@@ -100,6 +100,17 @@ class SpeedCodingStore {
 
     // Start timer ticker
     this.startLocalTicker();
+
+    // Cloud seats sync across devices (initial pull and background interval)
+    setTimeout(() => {
+      this.pullSeatsFromCloud(false);
+    }, 1200);
+
+    setInterval(() => {
+      if (this.state && this.state.timer && this.state.timer.status !== 'running') {
+        this.pullSeatsFromCloud(false);
+      }
+    }, 25000);
   }
 
   loadState() {
@@ -193,6 +204,34 @@ class SpeedCodingStore {
         // Official Google Apps Script Web App URL
         if (!parsed.appsScriptUrl || parsed.appsScriptUrl.indexOf('AKfycb') === -1) {
           parsed.appsScriptUrl = 'https://script.google.com/macros/s/AKfycbw1-xQQ_2jqLQ0PfDvaA6qWP__kxHt5_Di6Sd5Hy2RDbAUYJQSs3wjARtvJnV4bwXUA/exec';
+        }
+
+        // Apply shared seats from URL parameter if opened via shareable link (?seats=...)
+        if (typeof window !== 'undefined' && window.location && window.location.search) {
+          try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedSeats = urlParams.get('seats');
+            if (encodedSeats) {
+              const decoded = JSON.parse(decodeURIComponent(escape(atob(encodedSeats))));
+              if (Array.isArray(decoded) && decoded.length > 0) {
+                const sMap = new Map(decoded.map(s => [s.id, s]));
+                parsed.seats.forEach(seat => {
+                  const cs = sMap.get(seat.id);
+                  if (cs) {
+                    seat.participantId = cs.pId || cs.participantId || null;
+                    seat.participantName = cs.name || cs.participantName || '';
+                    seat.category = cs.cat || cs.category || '';
+                    seat.school = cs.sch || cs.school || '';
+                    seat.status = cs.st || cs.status || 'empty';
+                    seat.finishSeconds = cs.fs || cs.finishSeconds || null;
+                    seat.finishTimeElapsed = cs.fe || cs.finishTimeElapsed || null;
+                  }
+                });
+              }
+            }
+          } catch (err) {
+            console.warn('Failed to parse seats from URL parameter:', err);
+          }
         }
 
         return parsed;
@@ -360,19 +399,51 @@ class SpeedCodingStore {
   // --- PARTICIPANT & SEAT ACTIONS ---
   assignParticipantToSeat(seatId, participant) {
     const seat = this.state.seats.find((s) => s.id === seatId);
-    if (!seat) return;
+    if (!seat) return null;
+
+    let oldSeat = null;
 
     if (participant) {
+      const pId = participant.id;
+      const pName = (participant.name || '').trim().toLowerCase();
+
+      // 1. CARI JIKA PESERTA SUDAH DUDUK DI KURSI LAIN
+      oldSeat = this.state.seats.find(s => s.id !== seatId && (
+        (pId && s.participantId === pId) ||
+        (pName && s.participantName && s.participantName.trim().toLowerCase() === pName)
+      ));
+
+      if (oldSeat) {
+        // Pindahkan data status selesai jika peserta sudah selesai di kursi lama
+        if (oldSeat.status === 'finished') {
+          seat.status = 'finished';
+          seat.finishSeconds = oldSeat.finishSeconds;
+          seat.finishTimeElapsed = oldSeat.finishTimeElapsed;
+          seat.finishTimestamp = oldSeat.finishTimestamp;
+        }
+
+        // KOSONGKAN KURSI LAMA (ORANG PINDAH KE KURSI BARU, KURSI LAMA TERHAPUS)
+        oldSeat.participantId = null;
+        oldSeat.participantName = '';
+        oldSeat.category = '';
+        oldSeat.school = '';
+        oldSeat.status = 'empty';
+        oldSeat.finishSeconds = null;
+        oldSeat.finishTimeElapsed = null;
+        oldSeat.finishTimestamp = null;
+      }
+
+      // 2. PASANG PESERTA KE KURSI BARU
       seat.participantId = participant.id || `P_${Date.now()}`;
       seat.participantName = participant.name;
       seat.category = participant.category || '';
       seat.school = participant.school || '';
-      // Retain finished status if already finished, otherwise coding
+
       if (seat.status !== 'finished') {
         seat.status = 'coding';
       }
     } else {
-      // Unassign
+      // Unassign / Mengosongkan kursi
       seat.participantId = null;
       seat.participantName = '';
       seat.category = '';
@@ -382,7 +453,27 @@ class SpeedCodingStore {
       seat.finishTimeElapsed = null;
       seat.finishTimestamp = null;
     }
+
+    // 3. PEMBERSIHAN EXTRA: CEK DAN HAPUS SETIAP POTENSI DUPLIKAT NAMA DI SEMUA KURSI LAIN
+    if (participant && participant.name) {
+      const targetName = participant.name.trim().toLowerCase();
+      this.state.seats.forEach(s => {
+        if (s.id !== seatId && s.participantName && s.participantName.trim().toLowerCase() === targetName) {
+          s.participantId = null;
+          s.participantName = '';
+          s.category = '';
+          s.school = '';
+          s.status = 'empty';
+          s.finishSeconds = null;
+          s.finishTimeElapsed = null;
+          s.finishTimestamp = null;
+        }
+      });
+    }
+
     this.saveState(this.state, true);
+    this.pushSeatsToCloud();
+    return { seat, oldSeat };
   }
 
   swapSeats(seatIdA, seatIdB) {
@@ -408,6 +499,7 @@ class SpeedCodingStore {
     fields.forEach(f => seatB[f] = temp[f]);
 
     this.saveState(this.state, true);
+    this.pushSeatsToCloud();
     return { seatA, seatB };
   }
 
@@ -665,6 +757,111 @@ class SpeedCodingStore {
     });
     this.resetTimer();
     this.saveState(this.state, true);
+    this.pushSeatsToCloud();
+  }
+
+  // =========================================================================
+  // CLOUD SEAT SYNCHRONIZATION (ACROSS COMPUTERS & TV SCREENS)
+  // =========================================================================
+
+  // Push seats to cloud (debounced)
+  pushSeatsToCloud() {
+    if (this._cloudPushTimeout) clearTimeout(this._cloudPushTimeout);
+    this._cloudPushTimeout = setTimeout(async () => {
+      const url = this.state.appsScriptUrl;
+      if (!url) return;
+      try {
+        const minimalSeats = this.state.seats.map(s => ({
+          id: s.id,
+          label: s.label,
+          participantId: s.participantId || null,
+          participantName: s.participantName || '',
+          category: s.category || '',
+          school: s.school || '',
+          status: s.status || 'empty',
+          finishSeconds: s.finishSeconds || null,
+          finishTimeElapsed: s.finishTimeElapsed || null,
+          finishTimestamp: s.finishTimestamp || null
+        }));
+
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'sync_seats',
+            type: 'seats',
+            round: this.state.currentRound || 'QUALIFICATION',
+            seats: minimalSeats,
+            timestamp: new Date().toISOString()
+          })
+        });
+      } catch (err) {
+        console.warn('Cloud seats push error:', err);
+      }
+    }, 700);
+  }
+
+  // Pull seats from cloud to synchronize other devices
+  async pullSeatsFromCloud(isManual = false) {
+    const url = this.state.appsScriptUrl;
+    if (!url) return false;
+    try {
+      const res = await fetch(`${url}?action=get_seats&t=${Date.now()}`);
+      if (!res.ok) return false;
+      const json = await res.json();
+      if (json.status === 'success' && Array.isArray(json.seats) && json.seats.length > 0) {
+        const cloudMap = new Map(json.seats.map(s => [s.id, s]));
+        let hasChanges = false;
+
+        this.state.seats.forEach(seat => {
+          const cs = cloudMap.get(seat.id);
+          if (cs) {
+            if (seat.participantName !== cs.participantName || seat.status !== cs.status) {
+              hasChanges = true;
+            }
+            seat.participantId = cs.participantId || null;
+            seat.participantName = cs.participantName || '';
+            seat.category = cs.category || '';
+            seat.school = cs.school || '';
+            seat.status = cs.status || 'empty';
+            seat.finishSeconds = cs.finishSeconds || null;
+            seat.finishTimeElapsed = cs.finishTimeElapsed || null;
+            seat.finishTimestamp = cs.finishTimestamp || null;
+          }
+        });
+
+        if (hasChanges || isManual) {
+          this.saveState(this.state, true);
+          return true;
+        }
+      }
+    } catch (err) {
+      console.warn('Cloud seats pull error:', err);
+    }
+    return false;
+  }
+
+  // Generate shareable link to open identical seats on any computer/projector
+  generateShareableSeatsUrl() {
+    try {
+      const minimal = this.state.seats.map(s => ({
+        id: s.id,
+        pId: s.participantId || null,
+        name: s.participantName || '',
+        cat: s.category || '',
+        sch: s.school || '',
+        st: s.status || 'empty',
+        fs: s.finishSeconds || null,
+        fe: s.finishTimeElapsed || null
+      }));
+      const str = JSON.stringify(minimal);
+      const b64 = btoa(unescape(encodeURIComponent(str)));
+      const base = window.location.origin + window.location.pathname;
+      return `${base}?seats=${b64}`;
+    } catch (err) {
+      return window.location.href;
+    }
   }
 }
 

@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isSelected = p.id === seat.participantId;
       const opt = document.createElement('option');
       opt.value = p.id;
-      opt.textContent = `${p.name} (${p.category} - ${p.school}) ${isTaken ? '⚠️ [Posisi Lain]' : ''}`;
+      opt.textContent = `${p.name} (${p.category} - ${p.school}) ${isTaken ? '⚠️ [Pindah dari Meja Lain]' : ''}`;
       if (isSelected) opt.selected = true;
       selectParticipant.appendChild(opt);
     });
@@ -394,7 +394,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (p) {
       inputSeatCategory.value = p.category;
       inputSeatSchool.value = p.school;
-      window.store.assignParticipantToSeat(activeSeatId, p);
+      const res = window.store.assignParticipantToSeat(activeSeatId, p);
+      if (res && res.oldSeat) {
+        showToast(`🪑 ${p.name} dipindahkan ke posisi ini (posisi lama otomatis dikosongkan).`);
+        if (typeof highlightSwappedPins === 'function') {
+          highlightSwappedPins([activeSeatId, res.oldSeat.id]);
+        }
+      }
     } else {
       inputSeatCategory.value = '';
       inputSeatSchool.value = '';
@@ -1322,6 +1328,37 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.innerHTML = `<span>🐱</span> <span>${msg}</span>`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3500);
+  }
+
+  // --- CLOUD SEATS SYNC & SHARE LINK BUTTONS ---
+  const btnSyncSeatsCloud = document.getElementById('btnSyncSeatsCloud');
+  const btnCopyShareSeatsLink = document.getElementById('btnCopyShareSeatsLink');
+
+  if (btnSyncSeatsCloud) {
+    btnSyncSeatsCloud.addEventListener('click', async () => {
+      btnSyncSeatsCloud.disabled = true;
+      btnSyncSeatsCloud.textContent = '⏳ Sinkron...';
+      const updated = await window.store.pullSeatsFromCloud(true);
+      btnSyncSeatsCloud.disabled = false;
+      btnSyncSeatsCloud.textContent = '☁️ Sinkron Meja';
+      if (updated) {
+        showToast('✅ Posisi denah meja berhasil disinkronkan dari Cloud!');
+      } else {
+        showToast('ℹ️ Posisi denah sudah sesuai dengan versi Cloud terbaru.');
+      }
+    });
+  }
+
+  if (btnCopyShareSeatsLink) {
+    btnCopyShareSeatsLink.addEventListener('click', async () => {
+      const shareUrl = window.store.generateShareableSeatsUrl();
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showToast('📋 Link posisi denah berhasil disalin! Buka link ini di TV panggung / komputer lain.');
+      } catch (e) {
+        prompt('Salin link posisi denah ini:', shareUrl);
+      }
+    });
   }
 
   // --- INIT ---

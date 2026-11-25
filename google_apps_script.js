@@ -19,6 +19,27 @@ function doGet(e) {
     var sheets = ss.getSheets();
     var reqSheet = (e && e.parameter && e.parameter.sheet) ? String(e.parameter.sheet).trim().toLowerCase() : '';
     var reqType = (e && e.parameter && e.parameter.type) ? String(e.parameter.type).trim().toLowerCase() : '';
+    var reqAction = (e && e.parameter && e.parameter.action) ? String(e.parameter.action).trim().toLowerCase() : '';
+    
+    // =========================================================================
+    // 0. SINKRONISASI POSISI DENAH KURSI CLOUD (ACROSS ALL COMPUTERS & DEVICES)
+    // =========================================================================
+    if (reqAction === 'get_seats' || reqSheet === 'seats_layout' || reqType === 'seats') {
+      var props = PropertiesService.getScriptProperties();
+      var rawSeats = props.getProperty('DENAH_SEATS_DATA');
+      var updatedTime = props.getProperty('DENAH_SEATS_UPDATED');
+      var parsedSeats = null;
+      if (rawSeats) {
+        try { parsedSeats = JSON.parse(rawSeats); } catch (err) {}
+      }
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        type: "seats",
+        updatedAt: updatedTime || null,
+        count: parsedSeats ? parsedSeats.length : 0,
+        seats: parsedSeats
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
     
     // =========================================================================
     // 1. REKAPITULASI PENYISIHAN & FINAL (UNTUK HALAMAN /rank)
@@ -311,6 +332,23 @@ function doPost(e) {
     }
 
     var postData = JSON.parse(e.postData.contents);
+    var action = (postData.action || '').toLowerCase();
+
+    // =========================================================================
+    // 0. SIMPAN POSISI DENAH KURSI KE CLOUD SCRIPT PROPERTIES (CROSS-DEVICE)
+    // =========================================================================
+    if (action === 'sync_seats' || action === 'save_seats' || postData.type === 'seats') {
+      if (postData.seats && Array.isArray(postData.seats)) {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperty('DENAH_SEATS_DATA', JSON.stringify(postData.seats));
+        props.setProperty('DENAH_SEATS_UPDATED', new Date().toISOString());
+        return ContentService.createTextOutput(JSON.stringify({
+          status: "success",
+          message: "Posisi denah kursi berhasil disimpan ke Cloud!"
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     var round = (postData.round || 'QUALIFICATION').toUpperCase();
     var isFinal = (round === 'FINAL');
     var results = postData.results || [];
