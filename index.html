@@ -136,7 +136,7 @@
             <span class="pulse-dot" id="timerPulseDotDual"></span>
             <span id="timerStatusLabelDual">SISA WAKTU</span>
           </div>
-          <div class="timer-digits" id="timerDisplayDual">60:00</div>
+          <div class="timer-digits" id="timerDisplayDual" title="Klik untuk koreksi waktu berjalan (jika terlambat start)">60:00</div>
           <div class="timer-subinfo">
             <span>Durasi: <strong id="timerDurationTextDual">30 Menit</strong></span>
             <span>•</span>
@@ -147,6 +147,7 @@
         <div class="timer-controls-quick">
           <button class="btn-ctrl" id="btnStartDual">▶ MULAI</button>
           <button class="btn-ctrl pause" id="btnPauseDual" style="display: none;">⏸ JEDA</button>
+          <button class="nav-btn" id="btnAdjustTimerDual" title="Koreksi waktu lomba jika terlambat start" style="font-size: 0.75rem; padding: 6px 10px;">⏱️ Koreksi</button>
           <button class="nav-btn" id="btnResetDual" style="font-size: 0.75rem;">🔄 Reset</button>
         </div>
 
@@ -218,7 +219,7 @@
           <span class="pulse-dot" id="timerPulseDotTV"></span>
           <span id="timerStatusLabelTV">SISA WAKTU</span>
         </div>
-        <div class="timer-digits" id="timerDisplayTV">30:00</div>
+        <div class="timer-digits" id="timerDisplayTV" title="Klik untuk koreksi waktu berjalan (jika terlambat start)">30:00</div>
         <div class="timer-subinfo">
           <span>Durasi: <strong id="timerDurationTextTV">30 Menit</strong></span>
           <span>•</span>
@@ -229,6 +230,7 @@
       <div class="timer-controls-quick">
         <button class="btn-ctrl" id="btnStartTV">▶ MULAI</button>
         <button class="btn-ctrl pause" id="btnPauseTV" style="display: none;">⏸ JEDA</button>
+        <button class="nav-btn" id="btnAdjustTimerTV" title="Koreksi waktu lomba jika terlambat start" style="font-size: 0.75rem; padding: 6px 10px;">⏱️ Koreksi Waktu</button>
         <button class="nav-btn" id="btnResetTV" style="font-size: 0.75rem;">🔄 Reset Timer</button>
       </div>
 
@@ -261,10 +263,11 @@
     <section class="operator-toolbar">
       <div class="op-timer-display">
         <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">TIMER LOMBA:</span>
-        <span class="op-timer-digits" id="opTimerDisplaySolo">30:00</span>
+        <span class="op-timer-digits" id="opTimerDisplaySolo" title="Klik untuk koreksi waktu berjalan (jika terlambat start)">30:00</span>
         <span style="font-size: 0.85rem; color: var(--text-secondary);">(Elapsed: <strong id="opElapsedDisplaySolo" style="color: #fff;">00:00</strong>)</span>
         <button class="nav-btn primary" id="btnStartFloor" style="padding: 6px 14px;">▶ Start</button>
         <button class="nav-btn" id="btnPauseFloor" style="padding: 6px 14px; display: none;">⏸ Pause</button>
+        <button class="nav-btn" id="btnAdjustTimerFloor" title="Koreksi waktu lomba jika terlambat start" style="padding: 6px 10px; font-size: 0.75rem;">⏱️ Koreksi</button>
         <button class="nav-btn" id="btnResetFloor" style="padding: 6px 12px; font-size: 0.75rem;">🔄 Reset</button>
       </div>
 
@@ -347,6 +350,69 @@
           🗑 Kosongkan Posisi
         </button>
         <button class="nav-btn primary" id="btnSaveSeat">Tutup & Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TIMER TIME ADJUSTMENT MODAL (LATE START / KOREKSI) -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" id="timerAdjustModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>⏱️</span> <span>Koreksi Waktu Lomba</span>
+        </div>
+        <button class="modal-close-btn" id="btnCloseTimerAdjustModal">&times;</button>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.4;">
+        Gunakan menu ini jika lomba <strong>terlambat di-start</strong> atau panitia perlu menyesuaikan waktu yang sedang berjalan agar sinkron dengan waktu perlombaan sebenarnya.
+      </p>
+
+      <!-- LIVE DISPLAY CURRENT STATUS -->
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: center;">
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Waktu Berjalan (Elapsed)</span>
+          <div id="adjustCurrentElapsed" style="font-family: 'Orbitron', monospace; font-size: 1.5rem; font-weight: 800; color: #38bdf8; margin-top: 4px;">00:00</div>
+        </div>
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Sisa Waktu (Remaining)</span>
+          <div id="adjustCurrentRemaining" style="font-family: 'Orbitron', monospace; font-size: 1.5rem; font-weight: 800; color: #f59e0b; margin-top: 4px;">60:00</div>
+        </div>
+      </div>
+
+      <!-- QUICK SHORTCUT BUTTONS -->
+      <div style="margin-bottom: 16px;">
+        <label class="form-label" style="margin-bottom: 8px;">Penyesuaian Cepat (Jika Start Terlambat):</label>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="nav-btn quick-adj-btn" data-delta="60" style="flex: 1; padding: 8px 6px; font-weight: 700; color: #10b981; border-color: rgba(16, 185, 129, 0.4);">+1 Mnt</button>
+          <button type="button" class="nav-btn quick-adj-btn" data-delta="120" style="flex: 1; padding: 8px 6px; font-weight: 700; color: #10b981; border-color: rgba(16, 185, 129, 0.4);">+2 Mnt</button>
+          <button type="button" class="nav-btn quick-adj-btn" data-delta="180" style="flex: 1; padding: 8px 6px; font-weight: 700; color: #10b981; border-color: rgba(16, 185, 129, 0.4);">+3 Mnt</button>
+          <button type="button" class="nav-btn quick-adj-btn" data-delta="300" style="flex: 1; padding: 8px 6px; font-weight: 700; color: #10b981; border-color: rgba(16, 185, 129, 0.4);">+5 Mnt</button>
+          <button type="button" class="nav-btn quick-adj-btn" data-delta="-60" style="flex: 1; padding: 8px 6px; font-weight: 700; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">-1 Mnt</button>
+        </div>
+      </div>
+
+      <!-- EXACT TIME INPUT -->
+      <div style="background: rgba(30, 41, 59, 0.5); border: 1px dashed var(--border-color); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;">
+        <label class="form-label" style="margin-bottom: 6px;">Atau Tentukan Waktu Berjalan Secara Tepat (MM:SS):</label>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <input type="number" id="inputAdjustElapsedMin" class="form-input" style="width: 70px; text-align: center; font-size: 1.1rem; font-family: 'Orbitron', monospace;" min="0" max="180" placeholder="00">
+            <span style="font-weight: 700; color: var(--text-secondary); font-size: 0.85rem;">Mnt</span>
+          </div>
+          <span style="font-weight: 800; font-size: 1.2rem; color: var(--text-secondary);">:</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <input type="number" id="inputAdjustElapsedSec" class="form-input" style="width: 70px; text-align: center; font-size: 1.1rem; font-family: 'Orbitron', monospace;" min="0" max="59" placeholder="00">
+            <span style="font-weight: 700; color: var(--text-secondary); font-size: 0.85rem;">Dtk</span>
+          </div>
+          <button type="button" class="nav-btn primary" id="btnApplyExactTime" style="margin-left: auto; padding: 8px 14px;">Terapkan</button>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 14px;">
+        <button class="nav-btn" id="btnCloseAdjustModalBottom" style="margin-left: auto;">Tutup</button>
       </div>
     </div>
   </div>

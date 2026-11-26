@@ -1070,56 +1070,58 @@ body.mode-final .podium-card.rank-1 .podium-trophy-icon {
 }
 
 body.mode-final .podium-rank-badge {
-  font-size: 0.64rem;
-  padding: 1px 7px;
-  margin-bottom: 1px;
+  font-size: 0.8rem;
+  padding: 3px 10px;
+  margin-bottom: 3px;
 }
 
 body.mode-final .podium-name {
-  font-size: 0.88rem;
-  margin-bottom: 0;
-}
-
-body.mode-final .podium-card.rank-1 .podium-name {
-  font-size: 1.02rem;
-}
-
-body.mode-final .podium-school {
-  font-size: 0.67rem;
+  font-size: 1.3rem !important;
+  font-weight: 800 !important;
   margin-bottom: 2px;
 }
 
+body.mode-final .podium-card.rank-1 .podium-name {
+  font-size: 1.55rem !important;
+  font-weight: 800 !important;
+}
+
+body.mode-final .podium-school {
+  font-size: 0.92rem !important;
+  margin-bottom: 4px;
+}
+
 body.mode-final .podium-score-pill {
-  font-size: 0.82rem;
-  padding: 1px 6px;
+  font-size: 0.95rem;
+  padding: 3px 10px;
 }
 
 /* COMPACT FINAL TABLE */
 body.mode-final .rank-table-card {
   flex: 1;
   min-height: 0;
-  padding: 6px 12px;
-  border-radius: 10px;
+  padding: 10px 16px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 body.mode-final .table-header-title-bar {
-  margin-bottom: 3px;
+  margin-bottom: 6px;
 }
 
 body.mode-final .table-title-wrap h2 {
-  font-size: 0.92rem;
+  font-size: 1.15rem;
 }
 
 body.mode-final .table-subtitle {
-  font-size: 0.68rem;
+  font-size: 0.82rem;
 }
 
 body.mode-final .table-stats-badge {
-  font-size: 0.7rem;
-  padding: 1px 8px;
+  font-size: 0.82rem;
+  padding: 3px 10px;
 }
 
 body.mode-final .rank-table-wrapper {
@@ -1130,32 +1132,35 @@ body.mode-final .rank-table-wrapper {
 }
 
 body.mode-final .rank-table th {
-  padding: 4px 6px;
-  font-size: 0.7rem;
-}
-
-body.mode-final .rank-table td {
-  padding: 3px 6px;
-  font-size: 0.76rem;
-}
-
-body.mode-final .table-participant-name {
+  padding: 8px 10px;
   font-size: 0.82rem;
 }
 
+body.mode-final .rank-table td {
+  padding: 8px 10px;
+  font-size: 0.95rem;
+}
+
+body.mode-final .table-participant-name {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: #ffffff;
+}
+
 body.mode-final .table-participant-school {
-  font-size: 0.7rem;
+  font-size: 0.92rem !important;
+  color: #94a3b8;
 }
 
 body.mode-final .table-total-score {
-  font-size: 0.88rem;
-  padding: 1px 6px;
-  min-width: 44px;
+  font-size: 1.15rem !important;
+  padding: 2px 8px;
+  min-width: 48px;
 }
 
 body.mode-final .status-pill {
-  font-size: 0.67rem;
-  padding: 2px 7px;
+  font-size: 0.82rem !important;
+  padding: 4px 10px !important;
 }
 
 body.mode-final .rank-footer {

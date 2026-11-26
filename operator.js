@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnOpStart = document.getElementById('btnOpStart');
   const btnOpPause = document.getElementById('btnOpPause');
   const btnOpReset = document.getElementById('btnOpReset');
+  const btnOpAdjustTimer = document.getElementById('btnOpAdjustTimer');
   const checkQuickTap = document.getElementById('checkQuickTap');
   const btnRandomizeSeatsOp = document.getElementById('btnRandomizeSeatsOp');
 
@@ -22,6 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const soundIcon = document.getElementById('soundIcon');
 
   let isDraggingPin = false;
+
+  // Timer Adjustment Modal Elements
+  const timerAdjustModal = document.getElementById('timerAdjustModal');
+  const btnCloseTimerAdjustModal = document.getElementById('btnCloseTimerAdjustModal');
+  const btnCloseAdjustModalBottom = document.getElementById('btnCloseAdjustModalBottom');
+  const adjustCurrentElapsed = document.getElementById('adjustCurrentElapsed');
+  const adjustCurrentRemaining = document.getElementById('adjustCurrentRemaining');
+  const inputAdjustElapsedMin = document.getElementById('inputAdjustElapsedMin');
+  const inputAdjustElapsedSec = document.getElementById('inputAdjustElapsedSec');
+  const btnApplyExactTime = document.getElementById('btnApplyExactTime');
 
   // Modal Elements
   const seatModal = document.getElementById('seatModal');
@@ -433,6 +444,75 @@ document.addEventListener('DOMContentLoaded', () => {
         liveCurrentElapsed.textContent = formatTime(timer.elapsedSeconds);
       }
     }
+
+    if (timerAdjustModal && timerAdjustModal.classList.contains('active')) {
+      if (adjustCurrentElapsed) adjustCurrentElapsed.textContent = formatTime(timer.elapsedSeconds);
+      if (adjustCurrentRemaining) adjustCurrentRemaining.textContent = formatTime(timer.remainingSeconds);
+    }
+  }
+
+  // --- TIMER ADJUSTMENT MODAL (LATE START / KOREKSI WAKTU) ---
+  function openTimerAdjustModal() {
+    if (!timerAdjustModal) return;
+    const timer = window.store.state.timer;
+    const elapsed = timer.elapsedSeconds || 0;
+    const remaining = timer.remainingSeconds || ((timer.durationMinutes || 60) * 60);
+
+    if (adjustCurrentElapsed) adjustCurrentElapsed.textContent = formatTime(elapsed);
+    if (adjustCurrentRemaining) adjustCurrentRemaining.textContent = formatTime(remaining);
+
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    if (inputAdjustElapsedMin) inputAdjustElapsedMin.value = mins;
+    if (inputAdjustElapsedSec) inputAdjustElapsedSec.value = secs;
+
+    timerAdjustModal.classList.add('active');
+  }
+
+  function closeTimerAdjustModal() {
+    if (timerAdjustModal) timerAdjustModal.classList.remove('active');
+  }
+
+  if (btnCloseTimerAdjustModal) btnCloseTimerAdjustModal.addEventListener('click', closeTimerAdjustModal);
+  if (btnCloseAdjustModalBottom) btnCloseAdjustModalBottom.addEventListener('click', closeTimerAdjustModal);
+  if (timerAdjustModal) {
+    timerAdjustModal.addEventListener('click', (e) => {
+      if (e.target === timerAdjustModal) closeTimerAdjustModal();
+    });
+  }
+
+  if (btnOpAdjustTimer) btnOpAdjustTimer.addEventListener('click', openTimerAdjustModal);
+  if (opTimerDisplay) opTimerDisplay.addEventListener('click', openTimerAdjustModal);
+
+  // Quick adjust buttons (+1m, +2m, +3m, +5m, -1m)
+  document.querySelectorAll('#timerAdjustModal .quick-adj-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const delta = parseInt(btn.dataset.delta) || 0;
+      window.store.adjustTimer(delta);
+      const timer = window.store.state.timer;
+      if (adjustCurrentElapsed) adjustCurrentElapsed.textContent = formatTime(timer.elapsedSeconds || 0);
+      if (adjustCurrentRemaining) adjustCurrentRemaining.textContent = formatTime(timer.remainingSeconds || 0);
+      const mins = Math.floor((timer.elapsedSeconds || 0) / 60);
+      const secs = (timer.elapsedSeconds || 0) % 60;
+      if (inputAdjustElapsedMin) inputAdjustElapsedMin.value = mins;
+      if (inputAdjustElapsedSec) inputAdjustElapsedSec.value = secs;
+      showToast(`⏱️ Waktu disesuaikan (${delta > 0 ? '+' : ''}${Math.round(delta / 60)} Menit)`);
+    });
+  });
+
+  // Apply exact time
+  if (btnApplyExactTime) {
+    btnApplyExactTime.addEventListener('click', () => {
+      const mins = parseInt(inputAdjustElapsedMin ? inputAdjustElapsedMin.value : 0) || 0;
+      const secs = parseInt(inputAdjustElapsedSec ? inputAdjustElapsedSec.value : 0) || 0;
+      const totalSec = (mins * 60) + secs;
+      window.store.setElapsedTime(totalSec);
+      const timer = window.store.state.timer;
+      if (adjustCurrentElapsed) adjustCurrentElapsed.textContent = formatTime(timer.elapsedSeconds || 0);
+      if (adjustCurrentRemaining) adjustCurrentRemaining.textContent = formatTime(timer.remainingSeconds || 0);
+      showToast(`⏱️ Waktu berjalan diatur ke ${formatTime(totalSec)}`);
+      closeTimerAdjustModal();
+    });
   }
 
   btnOpStart.addEventListener('click', () => {

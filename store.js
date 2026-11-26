@@ -388,12 +388,39 @@ class SpeedCodingStore {
     this.saveState(this.state, true);
   }
 
-  adjustTimer(deltaSeconds) {
-    if (this.state.timer.status === 'running' || this.state.timer.status === 'paused') {
-      // Shifting startTimestamp adjusts elapsed & remaining
-      this.state.timer.startTimestamp -= deltaSeconds * 1000;
-      this.saveState(this.state, true);
+  setElapsedTime(elapsedSeconds) {
+    const timer = this.state.timer;
+    const durationSec = (timer.durationMinutes || 60) * 60;
+    const targetElapsed = Math.max(0, Math.min(durationSec, parseInt(elapsedSeconds) || 0));
+    const targetRemaining = Math.max(0, durationSec - targetElapsed);
+    const now = Date.now();
+
+    timer.elapsedSeconds = targetElapsed;
+    timer.remainingSeconds = targetRemaining;
+
+    if (timer.status === 'stopped') {
+      timer.startTimestamp = now - (targetElapsed * 1000);
+      timer.pausedAt = now;
+      timer.totalPausedMs = 0;
+      timer.status = 'paused';
+    } else if (timer.status === 'paused') {
+      const pausedMs = timer.totalPausedMs || 0;
+      timer.startTimestamp = (timer.pausedAt || now) - (targetElapsed * 1000) - pausedMs;
+    } else if (timer.status === 'running') {
+      const pausedMs = timer.totalPausedMs || 0;
+      timer.startTimestamp = now - (targetElapsed * 1000) - pausedMs;
     }
+
+    if (targetRemaining <= 0) {
+      timer.status = 'finished';
+    }
+    this.saveState(this.state, true);
+  }
+
+  adjustTimer(deltaSeconds) {
+    const timer = this.state.timer;
+    const currentElapsed = timer.elapsedSeconds || 0;
+    this.setElapsedTime(currentElapsed + deltaSeconds);
   }
 
   // --- PARTICIPANT & SEAT ACTIONS ---

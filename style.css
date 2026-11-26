@@ -232,28 +232,51 @@ body.round-final .dual-view-container .scoreboard-section {
 
 body.round-final .leaderboard-grid.compact-grid {
   grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
-  gap: 5px 12px;
+  gap: 8px 14px;
 }
 
 body.round-final .rank-row.compact-row {
-  padding: 4px 10px;
-  font-size: 0.95rem;
-  border-radius: 8px;
+  padding: 8px 14px !important;
+  font-size: 1.15rem !important;
+  border-radius: 10px;
+  min-height: 48px;
 }
 
-body.round-final .rank-row.compact-row .compact-name {
-  font-size: 0.95rem;
-  font-weight: 700;
+body.round-final .rank-row.compact-row .compact-participant-name {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+}
+
+body.round-final .rank-row.compact-row .participant-name-text {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+}
+
+body.round-final .rank-row.compact-row .compact-rank-num {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  min-width: 44px;
 }
 
 body.round-final .rank-row.compact-row .compact-seat-badge {
-  font-size: 0.85rem;
-  padding: 2px 8px;
+  font-size: 0.95rem !important;
+  padding: 3px 10px !important;
 }
 
-body.round-final .rank-row.compact-row .compact-time-badge {
-  font-size: 0.95rem;
-  padding: 2px 8px;
+body.round-final .rank-row.compact-row .compact-time-badge,
+body.round-final .rank-row.compact-row .compact-coding-badge {
+  font-size: 1.05rem !important;
+  padding: 4px 12px !important;
+}
+
+body.round-final .rank-row.compact-row .compact-school {
+  font-size: 0.92rem !important;
+}
+
+body.round-final .rank-row.compact-row .category-pill {
+  font-size: 0.85rem !important;
+  padding: 2px 8px !important;
 }
 
 /* TV MODE IN FINAL ROUND */
@@ -263,6 +286,28 @@ body.round-final .tv-container .timer-hero-box {
 
 body.round-final .tv-container .timer-digits {
   font-size: clamp(8rem, 17vh, 13rem) !important;
+}
+
+body.round-final .tv-container .rank-row.compact-row {
+  padding: 12px 18px !important;
+  min-height: 56px;
+}
+
+body.round-final .tv-container .compact-participant-name,
+body.round-final .tv-container .participant-name-text {
+  font-size: 1.55rem !important;
+  font-weight: 800 !important;
+}
+
+body.round-final .tv-container .compact-rank-num {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+}
+
+body.round-final .tv-container .compact-time-badge,
+body.round-final .tv-container .compact-coding-badge {
+  font-size: 1.25rem !important;
+  padding: 5px 14px !important;
 }
 
 /* FULLSCREEN OVERRIDES IN FINAL ROUND */
@@ -554,7 +599,8 @@ body.round-final .op-timer-digits {
   animation: pulse 1.2s infinite;
 }
 
-.timer-digits {
+.timer-digits,
+.op-timer-digits {
   font-family: 'Orbitron', monospace;
   font-size: 5.6rem;
   font-weight: 900;
@@ -562,6 +608,22 @@ body.round-final .op-timer-digits {
   letter-spacing: 2px;
   color: #ffffff;
   text-shadow: 0 0 25px rgba(255, 255, 255, 0.3), 0 0 50px rgba(255, 171, 25, 0.2);
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.timer-digits:hover,
+.op-timer-digits:hover {
+  transform: scale(1.02);
+  filter: brightness(1.2);
+}
+
+.quick-adj-btn {
+  transition: all 0.15s ease;
+}
+.quick-adj-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.25);
 }
 
 @media (max-width: 1400px) {
