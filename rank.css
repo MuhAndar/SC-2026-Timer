@@ -987,3 +987,182 @@ html:has(.rank-page-body)::-webkit-scrollbar-thumb:hover {
   font-size: 0.78rem;
   color: var(--text-secondary);
 }
+
+/* ========================================================================== */
+/* 5. GRAND FINAL: 1-SCREEN FIT (ZERO-SCROLL DISPLAY)                        */
+/* ========================================================================== */
+body.mode-final,
+html:has(body.mode-final) {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+body.mode-final .app-header {
+  padding: 4px 18px;
+  min-height: 44px;
+}
+
+body.mode-final .app-main-logo {
+  height: 32px;
+}
+
+body.mode-final .title-group h1 {
+  font-size: 1.05rem;
+}
+
+body.mode-final .title-group p {
+  font-size: 0.7rem;
+}
+
+body.mode-final .rank-main-container {
+  height: calc(100vh - 44px - 36px);
+  max-height: calc(100vh - 44px - 36px);
+  padding: 4px 16px;
+  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.mode-final .rank-toolbar-card {
+  padding: 4px 10px;
+  gap: 4px;
+  border-radius: 10px;
+}
+
+body.mode-final .toolbar-toggles-row {
+  gap: 6px;
+}
+
+body.mode-final .pill-toggle-btn {
+  padding: 3px 8px;
+  font-size: 0.74rem;
+}
+
+body.mode-final .toolbar-filter-row {
+  display: none !important; /* Hide search bar in final to save ~40px space */
+}
+
+/* COMPACT PODIUM */
+body.mode-final .podium-container {
+  gap: 8px;
+  padding: 0;
+}
+
+body.mode-final .podium-card {
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+
+body.mode-final .podium-trophy-icon {
+  font-size: 1.25rem;
+  margin-bottom: 0;
+}
+
+body.mode-final .podium-card.rank-1 .podium-trophy-icon {
+  font-size: 1.6rem;
+}
+
+body.mode-final .podium-rank-badge {
+  font-size: 0.64rem;
+  padding: 1px 7px;
+  margin-bottom: 1px;
+}
+
+body.mode-final .podium-name {
+  font-size: 0.88rem;
+  margin-bottom: 0;
+}
+
+body.mode-final .podium-card.rank-1 .podium-name {
+  font-size: 1.02rem;
+}
+
+body.mode-final .podium-school {
+  font-size: 0.67rem;
+  margin-bottom: 2px;
+}
+
+body.mode-final .podium-score-pill {
+  font-size: 0.82rem;
+  padding: 1px 6px;
+}
+
+/* COMPACT FINAL TABLE */
+body.mode-final .rank-table-card {
+  flex: 1;
+  min-height: 0;
+  padding: 6px 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.mode-final .table-header-title-bar {
+  margin-bottom: 3px;
+}
+
+body.mode-final .table-title-wrap h2 {
+  font-size: 0.92rem;
+}
+
+body.mode-final .table-subtitle {
+  font-size: 0.68rem;
+}
+
+body.mode-final .table-stats-badge {
+  font-size: 0.7rem;
+  padding: 1px 8px;
+}
+
+body.mode-final .rank-table-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+body.mode-final .rank-table th {
+  padding: 4px 6px;
+  font-size: 0.7rem;
+}
+
+body.mode-final .rank-table td {
+  padding: 3px 6px;
+  font-size: 0.76rem;
+}
+
+body.mode-final .table-participant-name {
+  font-size: 0.82rem;
+}
+
+body.mode-final .table-participant-school {
+  font-size: 0.7rem;
+}
+
+body.mode-final .table-total-score {
+  font-size: 0.88rem;
+  padding: 1px 6px;
+  min-width: 44px;
+}
+
+body.mode-final .status-pill {
+  font-size: 0.67rem;
+  padding: 2px 7px;
+}
+
+body.mode-final .rank-footer {
+  padding: 4px 18px;
+  min-height: 32px;
+}
+
+body.mode-final .sponsor-logo-img {
+  height: 26px;
+  max-width: 100px;
+}
+
+body.mode-final .footer-copyright {
+  font-size: 0.7rem;
+}

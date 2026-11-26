@@ -552,44 +552,88 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- RENDER ALL ---
   function renderAll() {
+    if (state.currentRound === 'final') {
+      document.body.classList.add('mode-final');
+      stopAutoScroll();
+    } else {
+      document.body.classList.remove('mode-final');
+    }
     renderHeroSection();
     renderTable();
   }
 
-  // --- AUTO-SCROLL ENGINE ---
+  // --- AUTO-SCROLL ENGINE (ONLY UP TO WINNERS CUTOFF & 15S INACTIVITY) ---
   let autoScrollTimer = null;
   let autoScrollDirection = 'down'; // 'down' or 'pause-bottom' or 'top' or 'pause-top'
+  let inactivityTimer = null;
+  let isProgrammaticScroll = false;
+  const INACTIVITY_DELAY_MS = 15000; // 15 detik tanpa aktivitas
+
+  // Hitung batas scroll: hanya sampai di ujung baris pemenang (Top 10 lolos final)
+  function getPenyisihanTargetScroll() {
+    if (state.currentRound === 'final') return 0;
+
+    if (rankTableBody && rankTable && rankTable.style.display !== 'none') {
+      const rows = rankTableBody.querySelectorAll('tr');
+      // Baris pemenang yang lolos ke grand final adalah baris ke-10 (index 9)
+      let targetRow = null;
+      if (rows.length >= 10) {
+        targetRow = rows[9];
+      } else if (rows.length > 0) {
+        targetRow = rows[rows.length - 1];
+      }
+
+      if (targetRow) {
+        const rect = targetRow.getBoundingClientRect();
+        const currentScroll = window.scrollY || window.pageYOffset;
+        const rowBottomDoc = currentScroll + rect.bottom;
+        // Scroll pas sampai ujung bawah baris ke-10 terlihat penuh di layar (+ sedikit ruang nafas 20px)
+        const calculatedTarget = rowBottomDoc - window.innerHeight + 20;
+        const maxDocScroll = document.documentElement.scrollHeight - window.innerHeight;
+        return Math.max(0, Math.min(calculatedTarget, maxDocScroll));
+      }
+    }
+
+    const maxDocScroll = document.documentElement.scrollHeight - window.innerHeight;
+    return Math.max(0, maxDocScroll);
+  }
 
   function startAutoScroll() {
+    if (state.currentRound === 'final') return; // Grand Final muat dalam 1 layar, tidak perlu scroll
+
     stopAutoScroll();
     state.isAutoScrolling = true;
+    autoScrollDirection = 'down';
+
     if (btnToggleAutoScroll) {
       btnToggleAutoScroll.classList.add('active');
       if (autoScrollIcon) autoScrollIcon.textContent = '⏸';
       if (autoScrollText) autoScrollText.textContent = 'Jeda Scroll';
     }
 
-    const scrollSpeed = 1; // pixels per step
+    const scrollSpeed = 1; // 1 pixel per step untuk pergerakan sangat halus
     const stepInterval = 28; // ms
 
     autoScrollTimer = setInterval(() => {
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      if (maxScroll <= 5) return; // No need to scroll if content fits in 1 screen!
+      const targetScroll = getPenyisihanTargetScroll();
+      if (targetScroll <= 8) return; // Konten sudah muat 1 layar
 
       const currentScroll = window.scrollY || window.pageYOffset;
 
       if (autoScrollDirection === 'down') {
-        if (currentScroll >= maxScroll - 3) {
+        if (currentScroll >= targetScroll - 2) {
           autoScrollDirection = 'pause-bottom';
           setTimeout(() => {
             if (!state.isAutoScrolling) return;
+            isProgrammaticScroll = true;
             window.scrollTo({ top: 0, behavior: 'smooth' });
             autoScrollDirection = 'pause-top';
             setTimeout(() => {
               if (state.isAutoScrolling) autoScrollDirection = 'down';
-            }, 1800);
-          }, 3500); // Pause 3.5s at bottom so spectators can read
+            }, 3500); // Berhenti 3.5 detik di atas (pada banner 10 Besar Pemenang)
+          }, 3500); // Berhenti 3.5 detik di bawah (pada baris ke-10 pemenang)
         } else {
+          isProgrammaticScroll = true;
           window.scrollBy(0, scrollSpeed);
         }
       }
@@ -609,6 +653,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- DETEKTOR INAKTIVITAS 15 DETIK ---
+  function resetInactivityTimer() {
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+
+    // Jika sedang auto-scroll dan user berinteraksi, jeda auto-scroll
+    if (state.isAutoScrolling) {
+      stopAutoScroll();
+    }
+
+    // Hanya aktifkan timer inaktivitas pada Babak Penyisihan
+    if (state.currentRound !== 'final') {
+      inactivityTimer = setTimeout(() => {
+        const target = getPenyisihanTargetScroll();
+        if (target > 10 && !state.isAutoScrolling) {
+          startAutoScroll();
+        }
+      }, INACTIVITY_DELAY_MS);
+    }
+  }
+
+  // Event listener aktivitas pengguna
+  ['mousemove', 'mousedown', 'keydown', 'touchstart'].forEach(evt => {
+    window.addEventListener(evt, resetInactivityTimer, { passive: true });
+  });
+
+  // Handle event scroll manual vs scroll otomatis dari script
+  window.addEventListener('scroll', () => {
+    if (isProgrammaticScroll) {
+      isProgrammaticScroll = false;
+      return;
+    }
+    resetInactivityTimer();
+  }, { passive: true });
+
+  // Jalankan timer inaktivitas awal
+  resetInactivityTimer();
+
   // --- EVENT LISTENERS ---
 
   // 1. Round Toggle
@@ -617,6 +698,16 @@ document.addEventListener('DOMContentLoaded', () => {
       roundToggleButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.currentRound = btn.getAttribute('data-round');
+
+      if (state.currentRound === 'final') {
+        document.body.classList.add('mode-final');
+        stopAutoScroll();
+        if (inactivityTimer) clearTimeout(inactivityTimer);
+      } else {
+        document.body.classList.remove('mode-final');
+        resetInactivityTimer();
+      }
+
       fetchRekapData(state.currentRound, true);
     });
   });
