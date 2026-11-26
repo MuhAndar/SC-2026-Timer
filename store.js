@@ -53,7 +53,7 @@ const INITIAL_PARTICIPANTS = [
   { id: 'P10', no: '10', name: 'Syarifa Syirena Abdullah', category: 'SMP', school: 'SMP IT Mukhlisiin (Kelas IX)' },
   { id: 'P11', no: '11', name: 'Siti Aisyah Qur\'anita', category: 'SMP', school: 'SMPIT Makassar Islamic School (Kelas VIII)' },
   { id: 'P12', no: '12', name: 'Adrian Luke Synarso', category: 'SD', school: 'SD Pundarika Makassar (Kelas 5)' },
-  { id: 'P13', no: '13', name: 'Leonrado Skylar Synarso', category: 'SMP', school: 'SMP Pundarika Makassar (Kelas 8)' },
+  { id: 'P13', no: '13', name: 'Leonardo Skylar Synarso', category: 'SMP', school: 'SMP Pundarika Makassar (Kelas 8)' },
   { id: 'P14', no: '14', name: 'Zain Maulana Al Fatih', category: 'SD', school: 'SDIA 68 Summarecon Mutiara Makassar (Kelas 5)' },
   { id: 'P15', no: '15', name: 'Muhammad Aidil', category: 'SMP', school: 'SMP Negeri 1 Galesong Utara (Kelas 7)' },
   { id: 'P16', no: '16', name: 'Muhammad Rumi Alfarizi Alfian', category: 'SD', school: 'SD Islam Athirah Makassar (Kelas 6)' },
@@ -104,7 +104,7 @@ class SpeedCodingStore {
     // Cloud seats sync across devices (initial pull and background interval)
     setTimeout(() => {
       this.pullSeatsFromCloud(false);
-    }, 1200);
+    }, 350);
 
     setInterval(() => {
       if (this.state && this.state.timer && this.state.timer.status !== 'running') {
@@ -774,6 +774,8 @@ class SpeedCodingStore {
         const minimalSeats = this.state.seats.map(s => ({
           id: s.id,
           label: s.label,
+          x: s.x,
+          y: s.y,
           participantId: s.participantId || null,
           participantName: s.participantName || '',
           category: s.category || '',
@@ -817,7 +819,13 @@ class SpeedCodingStore {
         this.state.seats.forEach(seat => {
           const cs = cloudMap.get(seat.id);
           if (cs) {
-            if (seat.participantName !== cs.participantName || seat.status !== cs.status) {
+            if (seat.participantName !== cs.participantName || 
+                seat.participantId !== cs.participantId || 
+                seat.status !== cs.status ||
+                seat.school !== cs.school ||
+                seat.category !== cs.category ||
+                seat.finishTimeElapsed !== cs.finishTimeElapsed ||
+                (cs.x !== undefined && (seat.x !== cs.x || seat.y !== cs.y))) {
               hasChanges = true;
             }
             seat.participantId = cs.participantId || null;
@@ -828,6 +836,10 @@ class SpeedCodingStore {
             seat.finishSeconds = cs.finishSeconds || null;
             seat.finishTimeElapsed = cs.finishTimeElapsed || null;
             seat.finishTimestamp = cs.finishTimestamp || null;
+            if (cs.x !== undefined && cs.y !== undefined) {
+              seat.x = cs.x;
+              seat.y = cs.y;
+            }
           }
         });
 

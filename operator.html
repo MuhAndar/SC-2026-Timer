@@ -143,8 +143,9 @@
         </div>
 
         <!-- Custom manual edit time if needed -->
-        <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary);">
+        <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); flex-wrap: wrap;">
           <span>Koreksi Manual:</span>
+          <span id="detectedTimeHint" style="color: #38bdf8; font-weight: 700; font-family: 'Orbitron', monospace; font-size: 0.82rem; background: rgba(56, 189, 248, 0.12); padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(56, 189, 248, 0.3);">(Waktu Terdeteksi: -)</span>
           <input type="text" id="inputCustomTime" class="form-input" style="width: 90px; padding: 4px 8px; font-size: 0.85rem; text-align: center;" placeholder="MM:SS">
           <button type="button" class="nav-btn" id="btnApplyCustomTime" style="padding: 4px 10px; font-size: 0.75rem;">Terapkan</button>
           <button type="button" class="nav-btn" id="btnResetFinish" style="padding: 4px 10px; font-size: 0.75rem; color: #f59e0b;">Batal Selesai</button>

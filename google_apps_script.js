@@ -536,7 +536,7 @@ function normalizeName(str) {
 }
 
 /**
- * Pencocokan nama fleksibel (menangani spasi ganda, singkatan, atau nama panggilan)
+ * Pencocokan nama fleksibel (menangani spasi ganda, singkatan, nama panggilan, serta typo kecil 1-2 huruf)
  */
 function isNameMatch(normA, normB) {
   if (!normA || !normB) return false;
@@ -544,5 +544,29 @@ function isNameMatch(normA, normB) {
   if (normA.length >= 4 && normB.length >= 4) {
     if (normA.indexOf(normB) !== -1 || normB.indexOf(normA) !== -1) return true;
   }
+  // Toleransi typo kecil (misal "leonrado" vs "leonardo") jika panjang nama >= 6 karakter
+  if (normA.length >= 6 && normB.length >= 6 && Math.abs(normA.length - normB.length) <= 2) {
+    var dist = levenshteinDistance(normA, normB);
+    if (dist <= 2) return true;
+  }
   return false;
+}
+
+function levenshteinDistance(a, b) {
+  var matrix = [];
+  for (var i = 0; i <= b.length; i++) matrix[i] = [i];
+  for (var j = 0; j <= a.length; j++) matrix[0][j] = j;
+  for (var i = 1; i <= b.length; i++) {
+    for (var j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
 }

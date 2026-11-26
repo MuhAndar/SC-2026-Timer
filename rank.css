@@ -14,26 +14,70 @@
   --rank-qualify-glow: rgba(16, 185, 129, 0.35);
 }
 
+html:has(.rank-page-body),
+html:has(.rank-page-body):fullscreen,
+html:has(.rank-page-body):-webkit-full-screen,
+body.rank-page-body,
+body.rank-page-body:fullscreen,
+body.rank-page-body:-webkit-full-screen {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(76, 151, 255, 0.5) rgba(15, 23, 42, 0.8) !important;
+}
+
+body.rank-page-body::-webkit-scrollbar,
+html:has(.rank-page-body)::-webkit-scrollbar {
+  display: block !important;
+  width: 8px !important;
+}
+
+body.rank-page-body::-webkit-scrollbar-track,
+html:has(.rank-page-body)::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.8) !important;
+}
+
+body.rank-page-body::-webkit-scrollbar-thumb,
+html:has(.rank-page-body)::-webkit-scrollbar-thumb {
+  background: rgba(76, 151, 255, 0.5) !important;
+  border-radius: 4px !important;
+}
+
+body.rank-page-body::-webkit-scrollbar-thumb:hover,
+html:has(.rank-page-body)::-webkit-scrollbar-thumb:hover {
+  background: var(--scratch-blue) !important;
+}
+
 .rank-page-body {
   min-height: 100vh;
-  height: auto;
+  height: auto !important;
   overflow-y: auto !important;
   background-color: var(--bg-dark);
   color: var(--text-primary);
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .rank-main-container {
   flex: 1;
-  max-width: 1560px;
+  max-width: 100% !important;
   width: 100%;
-  margin: 0 auto;
-  padding: 8px 18px;
+  margin: 0;
+  padding: 10px 24px 36px 24px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   box-sizing: border-box;
+}
+
+:fullscreen .rank-main-container,
+:-webkit-full-screen .rank-main-container {
+  max-width: 100% !important;
+  padding: 12px 28px 48px 28px;
 }
 
 /* ========================================================================== */

@@ -1797,8 +1797,8 @@ body {
 }
 
 /* FULLSCREEN & BIG SCREEN OVERRIDES (100% NO SCROLL, FITS 24" TO 100"+ TVS) */
-:fullscreen,
-:-webkit-full-screen,
+:fullscreen:not(html:has(.rank-page-body)):not(.rank-page-body),
+:-webkit-full-screen:not(html:has(.rank-page-body)):not(.rank-page-body),
 body.fullscreen-tv {
   overflow: hidden !important;
   height: 100vh !important;

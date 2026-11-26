@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const seatStatusBadge = document.getElementById('seatStatusBadge');
   const liveCurrentElapsed = document.getElementById('liveCurrentElapsed');
   const btnRecordFinishNow = document.getElementById('btnRecordFinishNow');
+  const detectedTimeHint = document.getElementById('detectedTimeHint');
   const inputCustomTime = document.getElementById('inputCustomTime');
   const btnApplyCustomTime = document.getElementById('btnApplyCustomTime');
   const btnResetFinish = document.getElementById('btnResetFinish');
@@ -371,17 +372,31 @@ document.addEventListener('DOMContentLoaded', () => {
       btnRecordFinishNow.innerHTML = `✅ TELAH SELESAI (${seat.finishTimeElapsed})`;
       btnRecordFinishNow.style.background = '#059669';
       inputCustomTime.value = seat.finishTimeElapsed || '';
+      if (detectedTimeHint) {
+        detectedTimeHint.textContent = `(Waktu Terdeteksi: ${seat.finishTimeElapsed || '-'})`;
+        detectedTimeHint.style.color = '#38bdf8';
+      }
     } else if (seat.status === 'coding') {
       seatStatusBadge.className = 'status-badge-coding';
       seatStatusBadge.textContent = 'SEDANG CODING';
       btnRecordFinishNow.innerHTML = `🏁 SELESAI SEKARANG! (Waktu: ${formatTime(elapsedSec)})`;
       btnRecordFinishNow.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
       inputCustomTime.value = '';
+      inputCustomTime.placeholder = formatTime(elapsedSec);
+      if (detectedTimeHint) {
+        detectedTimeHint.textContent = `(Waktu Berjalan: ${formatTime(elapsedSec)})`;
+        detectedTimeHint.style.color = '#94a3b8';
+      }
     } else {
       seatStatusBadge.className = 'category-tag';
       seatStatusBadge.textContent = 'KOSONG';
       btnRecordFinishNow.innerHTML = `🏁 SELESAI SEKARANG! (Waktu: ${formatTime(elapsedSec)})`;
       inputCustomTime.value = '';
+      inputCustomTime.placeholder = 'MM:SS';
+      if (detectedTimeHint) {
+        detectedTimeHint.textContent = `(Waktu Terdeteksi: -)`;
+        detectedTimeHint.style.color = '#94a3b8';
+      }
     }
   }
 
@@ -1339,6 +1354,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSyncSeatsCloud.disabled = true;
       btnSyncSeatsCloud.textContent = '⏳ Sinkron...';
       const updated = await window.store.pullSeatsFromCloud(true);
+      renderAll(window.store.state);
       btnSyncSeatsCloud.disabled = false;
       btnSyncSeatsCloud.textContent = '☁️ Sinkron Meja';
       if (updated) {

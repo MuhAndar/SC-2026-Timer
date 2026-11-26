@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { rank: 11, name: 'Syarifa Syirena Abdullah', category: 'SMP', school: 'SMP IT Mukhlisin', juri1: 85.5, juri2: 86.0, juri3: 86.5, fungsionalitas: 86.0, efisiensi: 85.5, kecepatan: 86.5, total: 86.0 },
     { rank: 12, name: 'Siti Aisyah Qur\'anita', category: 'SMP', school: 'SMPIT Makassar Islamic School', juri1: 84.5, juri2: 85.0, juri3: 86.0, fungsionalitas: 85.5, efisiensi: 85.0, kecepatan: 85.0, total: 85.2 },
     { rank: 13, name: 'Adrian Luke Synarso', category: 'SD', school: 'SD PUNDARIKA MAKASSAR', juri1: 84.0, juri2: 84.5, juri3: 85.0, fungsionalitas: 84.5, efisiensi: 84.0, kecepatan: 85.0, total: 84.5 },
-    { rank: 14, name: 'Leonrado Skylar Synarso', category: 'SMP', school: 'SMP PUNDARIKA MAKASSAR', juri1: 83.5, juri2: 84.0, juri3: 84.5, fungsionalitas: 84.0, efisiensi: 83.5, kecepatan: 84.5, total: 84.0 },
+    { rank: 14, name: 'Leonardo Skylar Synarso', category: 'SMP', school: 'SMP PUNDARIKA MAKASSAR', juri1: 83.5, juri2: 84.0, juri3: 84.5, fungsionalitas: 84.0, efisiensi: 83.5, kecepatan: 84.5, total: 84.0 },
     { rank: 15, name: 'Muhammad Aidil', category: 'SMP', school: 'SMP Negeri 1 Galesong Utara', juri1: 82.5, juri2: 83.0, juri3: 84.0, fungsionalitas: 83.0, efisiensi: 83.0, kecepatan: 83.5, total: 83.2 },
     { rank: 16, name: 'Muhammad Rumi Alfarizi Alfian', category: 'SD', school: 'SD IT Wahdah Islamiyah 01 Makassar', juri1: 82.0, juri2: 82.5, juri3: 83.0, fungsionalitas: 82.5, efisiensi: 82.0, kecepatan: 83.0, total: 82.5 },
     { rank: 17, name: 'Priscilla Lorelle Sentosa', category: 'SD', school: 'Dian Harapan', juri1: 81.0, juri2: 82.0, juri3: 82.5, fungsionalitas: 82.0, efisiensi: 81.5, kecepatan: 82.0, total: 81.8 },
