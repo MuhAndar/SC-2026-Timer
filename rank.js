@@ -133,11 +133,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const json = await res.json();
         if (json.status === 'success') {
           if (Array.isArray(json.rows) && json.rows.length > 0) {
-            // Apply scale <= 100 formatting to all items
-            const parsedRows = json.rows.map(item => ({
-              ...item,
-              total: formatTotalScore(item.total)
-            }));
+            // Enrich missing school/category by matching participant name with master data
+            const masterMap = new Map();
+            DEFAULT_QUALIFIERS.forEach(p => masterMap.set(p.name.toLowerCase().trim(), p));
+            try {
+              if (window.store && window.store.state && Array.isArray(window.store.state.participantsPool)) {
+                window.store.state.participantsPool.forEach(p => masterMap.set(p.name.toLowerCase().trim(), p));
+              }
+            } catch (e) {}
+
+            const parsedRows = json.rows.map(item => {
+              const master = masterMap.get((item.name || '').toLowerCase().trim());
+              return {
+                ...item,
+                school: item.school && item.school.trim() ? item.school : (master ? master.school : '-'),
+                category: master ? master.category : (item.category || 'SD'),
+                total: formatTotalScore(item.total)
+              };
+            });
 
             if (isFinal) {
               state.dataFinal = parsedRows;

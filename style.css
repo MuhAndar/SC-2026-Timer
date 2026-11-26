@@ -197,6 +197,89 @@ body {
   overflow: hidden;
 }
 
+/* ========================================================================== */
+/* GRAND FINAL ROUND: ENLARGED TIMER (ONLY 10 PARTICIPANTS)                   */
+/* ========================================================================== */
+body.round-final .dual-view-container .timer-hero-box {
+  padding: 18px 24px !important;
+  flex: 1.4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+body.round-final .dual-view-container .timer-digits {
+  font-size: clamp(4.6rem, 9vh, 7rem) !important;
+  line-height: 0.95;
+  text-shadow: 0 0 35px rgba(255, 255, 255, 0.4), 0 0 70px rgba(255, 171, 25, 0.35);
+}
+
+body.round-final .dual-view-container .timer-subinfo {
+  font-size: 1.2rem;
+  margin-top: 6px;
+}
+
+body.round-final .dual-view-container .timer-subinfo strong {
+  font-size: 1.45rem;
+}
+
+body.round-final .dual-view-container .scoreboard-section {
+  flex: 1;
+  padding: 6px 14px;
+}
+
+body.round-final .leaderboard-grid.compact-grid {
+  grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
+  gap: 5px 12px;
+}
+
+body.round-final .rank-row.compact-row {
+  padding: 4px 10px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+}
+
+body.round-final .rank-row.compact-row .compact-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+body.round-final .rank-row.compact-row .compact-seat-badge {
+  font-size: 0.85rem;
+  padding: 2px 8px;
+}
+
+body.round-final .rank-row.compact-row .compact-time-badge {
+  font-size: 0.95rem;
+  padding: 2px 8px;
+}
+
+/* TV MODE IN FINAL ROUND */
+body.round-final .tv-container .timer-hero-box {
+  padding: 24px 36px;
+}
+
+body.round-final .tv-container .timer-digits {
+  font-size: clamp(8rem, 17vh, 13rem) !important;
+}
+
+/* FULLSCREEN OVERRIDES IN FINAL ROUND */
+body.fullscreen-tv.round-final .dual-view-container .timer-digits {
+  font-size: clamp(4.6rem, 9vh, 7rem) !important;
+}
+
+body.fullscreen-tv.round-final .tv-container .timer-digits {
+  font-size: clamp(8rem, 17vh, 13rem) !important;
+}
+
+/* OPERATOR VIEW IN FINAL ROUND */
+body.round-final .op-timer-digits {
+  font-size: 2.5rem !important;
+  color: var(--rank-gold) !important;
+}
+
 .brand-wrapper {
   display: flex;
   align-items: center;

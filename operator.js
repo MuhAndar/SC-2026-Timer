@@ -401,40 +401,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Auto-sync single finished seat to Google Apps Script
+  // DIPUTUSKAN SESUAI INSTRUKSI: Panitia mengisi nilai & waktu secara manual di Spreadsheet agar tidak error/bentrok
   async function autoPushSeatToSpreadsheet(seat, action = 'record') {
-    const url = (window.store.state.settings && window.store.state.settings.appsScriptUrl) || (window.store.state.appsScriptUrl) || '';
-    if (!url || !seat || !seat.participantName) return;
-
-    const payload = {
-      round: window.store.state.currentRound || 'QUALIFICATION',
-      action: action,
-      results: [{
-        rank: seat.rank || 1,
-        seat: seat.label || seat.id,
-        name: seat.participantName,
-        category: seat.category || '',
-        school: seat.school || '',
-        elapsed: action === 'clear' ? '' : (seat.finishTimeElapsed || ''),
-        action: action,
-        timestamp: action === 'clear' ? '' : (seat.finishTimestamp || new Date().toLocaleTimeString('id-ID'))
-      }]
-    };
-
-    try {
-      await fetch(url, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-      });
-      console.log(`Auto-synced [${action}] to Apps Script:`, seat.participantName);
-    } catch (err) {
-      console.warn('Apps Script auto-sync error:', err);
-    }
+    return;
   }
 
   // --- TIMER TOOLBAR CONTROLS ---
   function renderTimerToolbar(state) {
+    if (state.currentRound === 'FINAL') {
+      document.body.classList.add('round-final');
+    } else {
+      document.body.classList.remove('round-final');
+    }
+
     const timer = state.timer;
     opTimerDisplay.textContent = formatTime(timer.remainingSeconds);
     opElapsedDisplay.textContent = formatTime(timer.elapsedSeconds);

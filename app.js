@@ -521,6 +521,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderBranding(state) {
     const isQual = (state.currentRound || 'QUALIFICATION') === 'QUALIFICATION';
 
+    if (isQual) {
+      document.body.classList.remove('round-final');
+    } else {
+      document.body.classList.add('round-final');
+    }
+
     if (headerEventTitle) headerEventTitle.textContent = state.eventTitle || 'SPEED CODING';
     if (headerEventSubtitle) {
       headerEventSubtitle.textContent = isQual ?
@@ -1011,105 +1017,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Auto-sync single finished seat or deletion/reset to Google Apps Script
+  // DIPUTUSKAN SESUAI INSTRUKSI: Panitia mengisi nilai & waktu secara manual di Spreadsheet agar tidak error/bentrok
   async function autoPushSeatToSpreadsheet(seat, action = 'record') {
-    const url = (window.store.state.settings && window.store.state.settings.appsScriptUrl) || (window.store.state.appsScriptUrl) || '';
-    if (!url || !seat || !seat.participantName) return;
-
-    const payload = {
-      round: window.store.state.currentRound || 'QUALIFICATION',
-      action: action,
-      results: [{
-        rank: seat.rank || 1,
-        seat: seat.label || seat.id,
-        name: seat.participantName,
-        category: seat.category || '',
-        school: seat.school || '',
-        elapsed: action === 'clear' ? '' : (seat.finishTimeElapsed || ''),
-        action: action,
-        timestamp: action === 'clear' ? '' : (seat.finishTimestamp || new Date().toLocaleTimeString('id-ID'))
-      }]
-    };
-
-    try {
-      await fetch(url, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-      });
-      console.log(`Auto-synced [${action}] to Apps Script:`, seat.participantName);
-    } catch (err) {
-      console.warn('Apps Script auto-sync error:', err);
-    }
+    return;
   }
 
-  // Push all finished seats to Apps Script
+  // Push all finished seats to Apps Script (Disabled to protect manual spreadsheet entry)
   if (btnSyncAllToSheets) {
     btnSyncAllToSheets.addEventListener('click', async () => {
-      const url = (window.store.state.settings && window.store.state.settings.appsScriptUrl) || (window.store.state.appsScriptUrl) || (inputAppsScriptUrl && inputAppsScriptUrl.value.trim());
-      if (!url) {
-        await window.scratchDialog.alert({
-          title: 'URL Apps Script Belum Diisi',
-          message: 'Silakan isi Google Apps Script Web App URL pada kolom pengaturan terlebih dahulu.',
-          type: 'warning',
-          icon: '📋'
-        });
-        return;
-      }
-
-      const seats = (window.store.state.seats || []).filter(s => s.status === 'finished' && s.participantName);
-      if (seats.length === 0) {
-        await window.scratchDialog.alert({
-          title: 'Belum Ada Peserta Selesai',
-          message: 'Belum ada peserta yang berstatus selesai untuk dikirim ke spreadsheet.',
-          type: 'info',
-          icon: '⏱️'
-        });
-        return;
-      }
-
-      const sortedFinished = [...seats].sort((a, b) => (a.finishSeconds || 0) - (b.finishSeconds || 0));
-      const results = sortedFinished.map((s, idx) => ({
-        rank: idx + 1,
-        seat: s.label || s.id,
-        name: s.participantName,
-        category: s.category || '',
-        school: s.school || '',
-        elapsed: s.finishTimeElapsed || '',
-        timestamp: s.finishTimestamp || ''
-      }));
-
-      const round = window.store.state.currentRound || 'QUALIFICATION';
-      const payload = { round: round, results: results };
-
-      try {
-        btnSyncAllToSheets.disabled = true;
-        btnSyncAllToSheets.textContent = '⏳ Mengirim ke Spreadsheet...';
-
-        await fetch(url, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify(payload)
-        });
-
-        await window.scratchDialog.alert({
-          title: 'Pengiriman Berhasil!',
-          message: `Berhasil mengirim data <strong>${results.length} peserta selesai</strong> ke Google Spreadsheet (Babak: <strong>${round}</strong>)!`,
-          type: 'success',
-          icon: '🎉'
-        });
-      } catch (err) {
-        await window.scratchDialog.alert({
-          title: 'Gagal Mengirim Data',
-          message: `Terjadi kendala saat mengirim data:<br><span style="color:#ef4444">${err.message}</span>`,
-          type: 'danger',
-          icon: '⚠️'
-        });
-      } finally {
-        btnSyncAllToSheets.disabled = false;
-        btnSyncAllToSheets.textContent = '🚀 Kirim Semua Waktu Selesai ke Google Spreadsheet';
-      }
+      await window.scratchDialog.alert({
+        title: 'Input Manual Sedang Berjalan',
+        message: 'Pengiriman ke Google Spreadsheet dinonaktifkan sesuai instruksi panitia. Seluruh nilai dan waktu selesai diisi secara manual langsung di Spreadsheet agar tidak terjadi bentrok/error.',
+        type: 'info',
+        icon: 'ℹ️'
+      });
     });
   }
 
